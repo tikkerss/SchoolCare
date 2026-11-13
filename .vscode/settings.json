@@ -1,0 +1,6 @@
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": { "source.fixAll": "explicit", "source.organizeImports": "explicit" },
+  "dart.lineLength": 100,
+  "[dart]": { "editor.rulers": [100], "editor.tabSize": 2 }
+}
