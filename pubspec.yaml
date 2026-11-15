@@ -41,7 +41,7 @@ dependencies:
   provider: ^6.1.5+1
   intl: ^0.20.3
   image_picker: ^1.2.4
-  geolocator: ^14.1.2
+  geolocator: ^14.0.1
   url_launcher: ^6.3.3
   file_picker: ^13.3.3
   table_calendar: ^3.3.0
