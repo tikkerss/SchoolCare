@@ -27,4 +27,14 @@ class Jadwal {
     required this.jamSelesai,
     this.status = StatusKelas.belumAbsen,
   });
+
+  Jadwal copyWith({StatusKelas? status}) => Jadwal(
+        id: id,
+        mapel: mapel,
+        kelas: kelas,
+        ruang: ruang,
+        jamMulai: jamMulai,
+        jamSelesai: jamSelesai,
+        status: status ?? this.status,
+      );
 }
