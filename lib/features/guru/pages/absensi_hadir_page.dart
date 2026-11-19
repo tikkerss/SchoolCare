@@ -1,21 +1,27 @@
-import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
-import '../data/bukti_foto_service.dart';
-import '../models/bukti_foto.dart';
-import '../models/jadwal.dart';
+import 'package:schoolcare/features/guru/data/guru_repository.dart';
+import 'package:schoolcare/features/guru/models/bukti_foto.dart';
+import 'package:schoolcare/features/guru/models/jadwal.dart';
+import 'package:schoolcare/features/guru/widgets/bukti_foto_picker.dart';
 
+/// Alur Hadir: foto bukti (kamera + GPS + waktu) → berita acara → status kelas berlangsung.
 class AbsensiHadirPage extends StatefulWidget {
-  final Jadwal jadwal;
   const AbsensiHadirPage({super.key, required this.jadwal});
+
+  final Jadwal jadwal;
 
   @override
   State<AbsensiHadirPage> createState() => _AbsensiHadirPageState();
 }
 
 class _AbsensiHadirPageState extends State<AbsensiHadirPage> {
-  final _beritaAcara = TextEditingController();
+  final _repo = GuruRepository();
+  // Kalau sedang mengubah absensi Hadir, isi berita acara lama.
+  late final _beritaAcara = TextEditingController(text: widget.jadwal.hadir ? widget.jadwal.beritaAcara : null);
   BuktiFoto? _bukti;
-  bool _memuat = false;
+  bool _menyimpan = false;
+
+  bool get _ubah => widget.jadwal.sudahDiabsen;
 
   @override
   void dispose() {
@@ -23,56 +29,43 @@ class _AbsensiHadirPageState extends State<AbsensiHadirPage> {
     super.dispose();
   }
 
-  Future<void> _ambilFoto() async {
-    setState(() => _memuat = true);
+  Future<void> _simpan() async {
+    setState(() => _menyimpan = true);
     try {
-      final bukti = await BuktiFotoService.ambil();
-      setState(() => _bukti = bukti);
+      await _repo.absenHadir(
+        jadwal: widget.jadwal,
+        bukti: _bukti,
+        beritaAcara: _beritaAcara.text.trim(),
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_ubah ? 'Perubahan absensi tersimpan.' : 'Absensi tersimpan. Status kelas: Berlangsung.')),
+      );
+      Navigator.pop(context, true);
     } catch (e) {
+      debugPrint('AbsensiHadirPage: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e.toString())));
+        final pesan = e.toString().replaceFirst('Exception: ', '');
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal menyimpan: $pesan')));
       }
     } finally {
-      if (mounted) setState(() => _memuat = false);
+      if (mounted) setState(() => _menyimpan = false);
     }
-  }
-
-  void _simpan() {
-    // Nanti: upload foto ke Supabase Storage + simpan data absensi.
-    Navigator.pop(context, true);
   }
 
   @override
   Widget build(BuildContext context) {
-    final bisaSimpan = _bukti != null && _beritaAcara.text.trim().isNotEmpty;
+    // Saat mengubah, foto lama tetap dipakai kalau tidak diambil ulang.
+    final bisaSimpan = (_bukti != null || _ubah) && _beritaAcara.text.trim().isNotEmpty && !_menyimpan;
 
     return Scaffold(
-      appBar: AppBar(title: Text('Hadir • ${widget.jadwal.kelas}')),
+      appBar: AppBar(title: Text('${_ubah ? 'Ubah: ' : ''}Hadir • Kelas ${widget.jadwal.namaKelas}')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text('1. Foto kegiatan kelas'),
+          Text(_ubah ? '1. Foto kegiatan kelas (ambil ulang bila perlu)' : '1. Foto kegiatan kelas (wajib)'),
           const SizedBox(height: 8),
-          if (_bukti != null) ...[
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.file(_bukti!.file, height: 220, fit: BoxFit.cover),
-            ),
-            const SizedBox(height: 8),
-            Text('Lokasi: ${_bukti!.latitude.toStringAsFixed(6)}, '
-                '${_bukti!.longitude.toStringAsFixed(6)}'),
-            Text('Waktu: ${DateFormat('dd/MM/yyyy HH:mm').format(_bukti!.waktu)}'),
-            const SizedBox(height: 8),
-          ],
-          OutlinedButton.icon(
-            icon: _memuat
-                ? const SizedBox(
-                    width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                : const Icon(Icons.photo_camera_outlined),
-            label: Text(_bukti == null ? 'Ambil Foto Bukti' : 'Ambil Ulang'),
-            onPressed: _memuat ? null : _ambilFoto,
-          ),
+          BuktiFotoPicker(bukti: _bukti, onBerubah: (b) => setState(() => _bukti = b)),
           const SizedBox(height: 24),
           const Text('2. Berita acara'),
           const SizedBox(height: 8),
@@ -88,7 +81,9 @@ class _AbsensiHadirPageState extends State<AbsensiHadirPage> {
           const SizedBox(height: 24),
           FilledButton(
             onPressed: bisaSimpan ? _simpan : null,
-            child: const Text('Simpan Absensi'),
+            child: _menyimpan
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                : Text(_ubah ? 'Simpan Perubahan' : 'Simpan Absensi'),
           ),
         ],
       ),
