@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:schoolcare/features/auth/pages/profil_page.dart';
 import 'pages/jadwal_page.dart';
 
 class GuruShell extends StatefulWidget {
@@ -15,7 +16,8 @@ class _GuruShellState extends State<GuruShell> {
     JadwalPage(),
     Scaffold(body: Center(child: Text('Kelas'))),
     Scaffold(body: Center(child: Text('Akademik'))),
-    Scaffold(body: Center(child: Text('Profil'))),
+    // Profil + tombol Keluar; guru wali kelas juga melihat tombol "Menu Wali Kelas" di sini.
+    ProfilPage(),
   ];
 
   @override

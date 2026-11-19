@@ -9,6 +9,13 @@ android {
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
+    // Bawaan Android membuang asset yang namanya diawali titik, sehingga .env
+    // (dipakai flutter_dotenv) tidak ikut masuk APK. Pola ini sama dengan bawaan,
+    // hanya tanpa aturan ".*".
+    androidResources {
+        ignoreAssetsPattern = "!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~"
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

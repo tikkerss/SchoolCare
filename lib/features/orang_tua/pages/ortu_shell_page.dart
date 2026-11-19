@@ -1,5 +1,6 @@
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:schoolcare/features/auth/pages/profil_page.dart';
 import 'package:schoolcare/features/orang_tua/data/ortu_models.dart';
 import 'package:schoolcare/features/orang_tua/data/ortu_repository.dart';
 import 'package:schoolcare/features/orang_tua/widgets/akademik_tab.dart';
@@ -77,8 +78,7 @@ class _OrtuShellPageState extends State<OrtuShellPage> {
             ),
       anak == null ? status : KehadiranTab(key: ValueKey('hadir-${anak.siswaId}'), anak: anak),
       anak == null ? status : AkademikTab(key: ValueKey('akademik-${anak.siswaId}'), anak: anak),
-      // TODO: ganti dengan ProfilPage(showAppBar: false) dari fitur auth setelah fondasi masuk main
-      const KosongView(pesan: 'Halaman Profil\n(disambungkan setelah fitur login selesai)', ikon: Icons.person_outline),
+      const ProfilPage(showAppBar: false),
     ];
 
     return Scaffold(
