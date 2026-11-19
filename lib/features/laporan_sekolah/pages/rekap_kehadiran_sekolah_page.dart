@@ -104,11 +104,12 @@ class _RekapKehadiranSekolahPageState extends State<RekapKehadiranSekolahPage> {
         ),
       );
     }
-    if (_data.isEmpty || _data.first.siswa.first.totalHari == 0) {
+    // Cek semua siswa (bukan hanya kelas pertama): kelas bisa saja belum punya siswa.
+    final semuaSiswa = [for (final k in _data) ...k.siswa];
+    if (semuaSiswa.every((r) => r.totalHari == 0)) {
       return const Center(child: Text('Belum ada data absensi di bulan ini.'));
     }
 
-    final semuaSiswa = [for (final k in _data) ...k.siswa];
     final rataSekolah =
         semuaSiswa.fold<double>(0, (s, r) => s + r.persenHadir) /
         semuaSiswa.length;
