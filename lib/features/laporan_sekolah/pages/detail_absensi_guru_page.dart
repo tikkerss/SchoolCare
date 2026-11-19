@@ -3,12 +3,24 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../wali_kelas/utils/format_tanggal.dart';
 import '../data/laporan_models.dart';
+import '../data/supabase_laporan_repository.dart' show urlFotoBuktiGuru, urlSuratGuru;
 import '../widgets/status_guru_badge.dart';
 
 class DetailAbsensiGuruPage extends StatelessWidget {
   const DetailAbsensiGuruPage({super.key, required this.item});
 
   final AbsensiGuruItem item;
+
+  /// Surat ada di bucket privat, jadi dibuka lewat URL sementara.
+  Future<void> _bukaSurat(BuildContext context, String path) async {
+    var ok = false;
+    try {
+      ok = await launchUrl(Uri.parse(await urlSuratGuru(path)), mode: LaunchMode.externalApplication);
+    } catch (_) {}
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Surat tidak dapat dibuka.')));
+    }
+  }
 
   Future<void> _bukaMaps(BuildContext context) async {
     final uri = Uri.parse(
@@ -52,7 +64,7 @@ class DetailAbsensiGuruPage extends StatelessWidget {
           if (a.status == StatusKehadiranGuru.hadir)
             ..._bagianHadir(context, judul),
           if (a.status == StatusKehadiranGuru.tidakHadir)
-            ..._bagianTidakHadir(judul),
+            ..._bagianTidakHadir(context, judul),
         ],
       ),
     );
@@ -68,24 +80,11 @@ class DetailAbsensiGuruPage extends StatelessWidget {
     return [
       Text('Foto Bukti', style: judul),
       const SizedBox(height: 8),
-      // Di versi Supabase:
-      // final url = await db.storage.from('absensi-guru').createSignedUrl(a.fotoPath!, 3600);
-      // lalu tampilkan dengan Image.network(url, fit: BoxFit.cover).
       ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: AspectRatio(
           aspectRatio: 4 / 3,
-          child: Container(
-            color: Colors.grey.shade300,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.photo_camera, size: 48, color: Colors.grey),
-                const SizedBox(height: 8),
-                Text('Foto dummy\n${a.fotoPath}', textAlign: TextAlign.center),
-              ],
-            ),
-          ),
+          child: _FotoBukti(path: a.fotoPath),
         ),
       ),
       const SizedBox(height: 4),
@@ -150,7 +149,7 @@ class DetailAbsensiGuruPage extends StatelessWidget {
     ];
   }
 
-  List<Widget> _bagianTidakHadir(TextStyle? judul) {
+  List<Widget> _bagianTidakHadir(BuildContext context, TextStyle? judul) {
     final a = item;
     return [
       Text('Keterangan Tidak Hadir', style: judul),
@@ -167,7 +166,8 @@ class DetailAbsensiGuruPage extends StatelessWidget {
               leading: const Icon(Icons.attach_file),
               title: const Text('Surat'),
               subtitle: Text(a.suratPath?.split('/').last ?? 'Tidak ada'),
-              // Versi Supabase: buka dengan createSignedUrl + url_launcher.
+              trailing: a.suratPath == null ? null : const Icon(Icons.open_in_new),
+              onTap: a.suratPath == null ? null : () => _bukaSurat(context, a.suratPath!),
             ),
             ListTile(
               leading: const Icon(Icons.swap_horiz),
@@ -188,4 +188,40 @@ class DetailAbsensiGuruPage extends StatelessWidget {
   String _formatJarak(double m) => m >= 1000
       ? '${(m / 1000).toStringAsFixed(1)} km'
       : '${m.toStringAsFixed(0)} m';
+}
+
+/// Foto bukti dari bucket privat `bukti-absensi-guru` (lewat URL sementara).
+class _FotoBukti extends StatelessWidget {
+  const _FotoBukti({required this.path});
+
+  final String? path;
+
+  Widget _kosong(String pesan) => Container(
+        color: Colors.grey.shade300,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.photo_camera, size: 48, color: Colors.grey),
+            const SizedBox(height: 8),
+            Text(pesan, textAlign: TextAlign.center),
+          ],
+        ),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    if (path == null) return _kosong('Tidak ada foto');
+    return FutureBuilder<String>(
+      future: urlFotoBuktiGuru(path!),
+      builder: (context, snap) {
+        if (snap.hasError) return _kosong('Foto tidak ditemukan');
+        if (!snap.hasData) return const Center(child: CircularProgressIndicator());
+        return Image.network(
+          snap.data!,
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) => _kosong('Foto tidak dapat dimuat'),
+        );
+      },
+    );
+  }
 }
