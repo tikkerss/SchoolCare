@@ -1,30 +1,19 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter_test/flutter_test.dart';
-import 'package:material_ui/material_ui.dart';
-
-import 'package:schoolcare/main.dart';
+import 'package:schoolcare/core/utils/fmt.dart';
+import 'package:schoolcare/features/auth/data/profile.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  test('Fmt.jam memotong detik', () {
+    expect(Fmt.jam('07:40:00'), '07:40');
+  });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+  test('Fmt.db memakai format tanggal Supabase', () {
+    expect(Fmt.db(DateTime(2026, 1, 5)), '2026-01-05');
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  test('Peran dari database dibaca dengan benar', () {
+    expect(roleFromDb('manajemen'), UserRole.manajemen);
+    expect(roleFromDb('guru'), UserRole.guru);
+    expect(roleFromDb('orang_tua'), UserRole.orangTua);
   });
 }
