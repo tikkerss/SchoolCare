@@ -3,16 +3,18 @@ import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:schoolcare/core/theme/app_colors.dart';
 import 'package:schoolcare/features/auth/providers/auth_provider.dart';
+import 'package:schoolcare/features/laporan_sekolah/data/laporan_repository.dart';
+import 'package:schoolcare/features/laporan_sekolah/pages/laporan_absensi_guru_page.dart';
+import 'package:schoolcare/features/laporan_sekolah/pages/pantau_rapor_page.dart';
+import 'package:schoolcare/features/laporan_sekolah/pages/rekap_kehadiran_sekolah_page.dart';
 import 'package:schoolcare/features/sekolah/data/sekolah_models.dart';
 import 'package:schoolcare/features/sekolah/data/sekolah_repository.dart';
 import 'package:schoolcare/features/sekolah/pages/agenda_admin_page.dart';
 import 'package:schoolcare/features/sekolah/pages/akun_page.dart';
 import 'package:schoolcare/features/sekolah/pages/jadwal_admin_page.dart';
 import 'package:schoolcare/features/sekolah/pages/kelas_page.dart';
-import 'package:schoolcare/features/sekolah/pages/laporan_guru_page.dart';
 import 'package:schoolcare/features/sekolah/pages/mapel_page.dart';
 import 'package:schoolcare/features/sekolah/pages/pengumuman_admin_page.dart';
-import 'package:schoolcare/features/sekolah/pages/rekap_kehadiran_page.dart';
 import 'package:schoolcare/features/sekolah/pages/siswa_page.dart';
 import 'package:schoolcare/features/sekolah/pages/tahun_ajaran_page.dart';
 import 'package:schoolcare/shared/widgets/menu_tile.dart';
@@ -28,6 +30,8 @@ class SekolahHomePage extends StatefulWidget {
 
 class _SekolahHomePageState extends State<SekolahHomePage> {
   final _repo = SekolahRepository();
+  // TODO(Backend): ganti dengan versi Supabase.
+  final LaporanRepository _laporan = DummyLaporanRepository();
   late Future<TahunAjaran?> _ta = _repo.getTahunAjaranAktif();
 
   void _muatUlang() => setState(() => _ta = _repo.getTahunAjaranAktif());
@@ -100,8 +104,22 @@ class _SekolahHomePageState extends State<SekolahHomePage> {
 
           const SectionHeader('Laporan'),
           _grid([
-            MenuTile(icon: Icons.fact_check_outlined, label: 'Absensi Guru', onTap: () => _buka(const LaporanGuruPage())),
-            MenuTile(icon: Icons.bar_chart, label: 'Rekap Kehadiran Siswa', onTap: () => _buka(const RekapKehadiranPage())),
+            // Halaman laporan buatan FE Wali Kelas (lib/features/laporan_sekolah)
+            MenuTile(
+              icon: Icons.badge_outlined,
+              label: 'Absensi Guru',
+              onTap: () => _buka(LaporanAbsensiGuruPage(repository: _laporan)),
+            ),
+            MenuTile(
+              icon: Icons.bar_chart,
+              label: 'Rekap Kehadiran Siswa',
+              onTap: () => _buka(RekapKehadiranSekolahPage(repository: _laporan)),
+            ),
+            MenuTile(
+              icon: Icons.fact_check_outlined,
+              label: 'Pantau Rapor',
+              onTap: () => _buka(PantauRaporPage(repository: _laporan)),
+            ),
           ]),
         ]),
       ),

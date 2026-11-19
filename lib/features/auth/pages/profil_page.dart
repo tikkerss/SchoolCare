@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:schoolcare/features/auth/data/profile.dart';
@@ -32,6 +33,16 @@ class ProfilPage extends StatelessWidget {
           Center(child: Text(p.namaLengkap, style: Theme.of(context).textTheme.titleLarge)),
           Center(child: Text(peran)),
           const SizedBox(height: 24),
+          if (auth.isWaliKelas)
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.school_outlined),
+                title: const Text('Menu Wali Kelas'),
+                subtitle: const Text('Absensi pagi, rekap kehadiran, kontak orang tua, rapor'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.push('/wali'),
+              ),
+            ),
           Card(
             child: Column(children: [
               ListTile(
