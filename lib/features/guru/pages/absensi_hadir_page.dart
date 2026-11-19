@@ -1,15 +1,8 @@
 import 'package:material_ui/material_ui.dart';
-<<<<<<< HEAD
 import 'package:schoolcare/features/guru/data/guru_repository.dart';
 import 'package:schoolcare/features/guru/models/bukti_foto.dart';
 import 'package:schoolcare/features/guru/models/jadwal.dart';
 import 'package:schoolcare/features/guru/widgets/bukti_foto_picker.dart';
-=======
-import '../data/bukti_foto_service.dart';
-import '../data/guru_repository.dart';
-import '../models/bukti_foto.dart';
-import '../models/jadwal.dart';
->>>>>>> 2c73845239f5fe979a88ce28feb339eb0cedf83b
 
 /// Alur Hadir: foto bukti (kamera + GPS + waktu) → berita acara → status kelas berlangsung.
 class AbsensiHadirPage extends StatefulWidget {
@@ -60,37 +53,10 @@ class _AbsensiHadirPageState extends State<AbsensiHadirPage> {
     }
   }
 
-<<<<<<< HEAD
   @override
   Widget build(BuildContext context) {
     // Saat mengubah, foto lama tetap dipakai kalau tidak diambil ulang.
     final bisaSimpan = (_bukti != null || _ubah) && _beritaAcara.text.trim().isNotEmpty && !_menyimpan;
-=======
-  bool _menyimpan = false;
-
-  /// Upload foto ke Storage + simpan baris absensi_guru.
-  Future<void> _simpan() async {
-    setState(() => _menyimpan = true);
-    try {
-      await GuruRepository().simpanHadir(
-        jadwalId: widget.jadwal.id,
-        bukti: _bukti!,
-        beritaAcara: _beritaAcara.text,
-      );
-      if (mounted) Navigator.pop(context, true);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal menyimpan absensi: $e')));
-      }
-    } finally {
-      if (mounted) setState(() => _menyimpan = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final bisaSimpan = _bukti != null && _beritaAcara.text.trim().isNotEmpty && !_menyimpan;
->>>>>>> 2c73845239f5fe979a88ce28feb339eb0cedf83b
 
     return Scaffold(
       appBar: AppBar(title: Text('${_ubah ? 'Ubah: ' : ''}Hadir • Kelas ${widget.jadwal.namaKelas}')),
