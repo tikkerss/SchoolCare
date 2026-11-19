@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import '../data/bukti_foto_service.dart';
+import '../data/guru_repository.dart';
 import '../models/bukti_foto.dart';
 import '../models/jadwal.dart';
 
@@ -38,14 +39,30 @@ class _AbsensiHadirPageState extends State<AbsensiHadirPage> {
     }
   }
 
-  void _simpan() {
-    // Nanti: upload foto ke Supabase Storage + simpan data absensi.
-    Navigator.pop(context, true);
+  bool _menyimpan = false;
+
+  /// Upload foto ke Storage + simpan baris absensi_guru.
+  Future<void> _simpan() async {
+    setState(() => _menyimpan = true);
+    try {
+      await GuruRepository().simpanHadir(
+        jadwalId: widget.jadwal.id,
+        bukti: _bukti!,
+        beritaAcara: _beritaAcara.text,
+      );
+      if (mounted) Navigator.pop(context, true);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal menyimpan absensi: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _menyimpan = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final bisaSimpan = _bukti != null && _beritaAcara.text.trim().isNotEmpty;
+    final bisaSimpan = _bukti != null && _beritaAcara.text.trim().isNotEmpty && !_menyimpan;
 
     return Scaffold(
       appBar: AppBar(title: Text('Hadir • ${widget.jadwal.kelas}')),

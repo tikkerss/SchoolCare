@@ -1,5 +1,5 @@
 import 'package:material_ui/material_ui.dart';
-import '../data/guru_dummy.dart';
+import '../data/guru_repository.dart';
 import '../models/jadwal.dart';
 import '../widgets/status_kelas_chip.dart';
 import 'absensi_mengajar_page.dart';
@@ -12,7 +12,31 @@ class JadwalPage extends StatefulWidget {
 }
 
 class _JadwalPageState extends State<JadwalPage> {
-  final _jadwal = List<Jadwal>.of(jadwalHariIni);
+  final _repo = GuruRepository();
+  List<Jadwal> _jadwal = [];
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _muat();
+  }
+
+  Future<void> _muat() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final data = await _repo.getJadwalHariIni();
+      if (mounted) setState(() => _jadwal = data);
+    } catch (e) {
+      if (mounted) setState(() => _error = 'Gagal memuat jadwal: $e');
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
 
   Future<void> _bukaAbsensi(int i) async {
     if (_jadwal[i].status != StatusKelas.belumAbsen) {
@@ -35,7 +59,33 @@ class _JadwalPageState extends State<JadwalPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Jadwal Mengajar')),
-      body: ListView.separated(
+      body: _isi(),
+    );
+  }
+
+  Widget _isi() {
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_error != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(_error!, textAlign: TextAlign.center),
+              const SizedBox(height: 12),
+              OutlinedButton(onPressed: _muat, child: const Text('Coba lagi')),
+            ],
+          ),
+        ),
+      );
+    }
+    if (_jadwal.isEmpty) {
+      return const Center(child: Text('Tidak ada jadwal mengajar hari ini.'));
+    }
+    return RefreshIndicator(
+      onRefresh: _muat,
+      child: ListView.separated(
         padding: const EdgeInsets.all(16),
         itemCount: _jadwal.length,
         separatorBuilder: (_, __) => const SizedBox(height: 12),
