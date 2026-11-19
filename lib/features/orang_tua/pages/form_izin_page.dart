@@ -81,6 +81,7 @@ class _FormIzinPageState extends State<FormIzinPage> {
         selesai: rentang.end,
         alasan: _alasan.text.trim(),
         namaLampiran: _lampiran?.uri.pathSegments.last,
+        lampiran: _lampiran,
       );
       if (!mounted) return;
       _snack('Pengajuan terkirim. Kehadiran ${widget.anak.nama} sudah diperbarui.');
