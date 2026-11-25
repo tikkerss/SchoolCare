@@ -4,7 +4,9 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../wali_kelas/utils/format_tanggal.dart';
 import '../data/laporan_models.dart';
+import '../data/supabase_laporan_repository.dart' show urlFotoBuktiGuru, urlSuratGuru;
 import '../widgets/status_guru_badge.dart';
+
 import 'package:schoolcare/shared/widgets/permukaan.dart';
 
 class DetailAbsensiGuruPage extends StatelessWidget {
@@ -12,10 +14,19 @@ class DetailAbsensiGuruPage extends StatelessWidget {
 
   final AbsensiGuruItem item;
 
+  /// Surat ada di bucket privat, jadi dibuka lewat URL sementara.
+  Future<void> _bukaSurat(BuildContext context, String path) async {
+    var ok = false;
+    try {
+      ok = await launchUrl(Uri.parse(await urlSuratGuru(path)), mode: LaunchMode.externalApplication);
+    } catch (_) {}
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Surat tidak dapat dibuka.')));
+    }
+  }
+
   Future<void> _bukaMaps(BuildContext context) async {
-    final uri = Uri.parse(
-      'https://www.google.com/maps/search/?api=1&query=${item.lat},${item.lng}',
-    );
+    final uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=${item.lat},${item.lng}');
     var ok = false;
     try {
       ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -23,9 +34,7 @@ class DetailAbsensiGuruPage extends StatelessWidget {
       // gagal membuka, ditangani di bawah
     }
     if (!ok && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Google Maps tidak bisa dibuka.')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Google Maps tidak bisa dibuka.')));
     }
   }
 
@@ -36,27 +45,27 @@ class DetailAbsensiGuruPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text('${a.mapel} • ${a.kelas}')),
-      body: LembarPutih(child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  '${a.guru}\n${formatTanggal(a.tanggal)} • Jam ke-${a.jamKe} '
-                  '(${formatJam(a.jamMulai)})',
+      body: LembarPutih(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${a.guru}\n${formatTanggal(a.tanggal)} • Jam ke-${a.jamKe} '
+                    '(${formatJam(a.jamMulai)})',
+                  ),
                 ),
-              ),
-              StatusGuruBadge(a),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (a.status == StatusKehadiranGuru.hadir)
-            ..._bagianHadir(context, judul),
-          if (a.status == StatusKehadiranGuru.tidakHadir)
-            ..._bagianTidakHadir(judul),
-        ],
-      )),
+                StatusGuruBadge(a),
+              ],
+            ),
+            const SizedBox(height: 16),
+            if (a.status == StatusKehadiranGuru.hadir) ..._bagianHadir(context, judul),
+            if (a.status == StatusKehadiranGuru.tidakHadir) ..._bagianTidakHadir(context, judul),
+          ],
+        ),
+      ),
     );
   }
 
@@ -68,31 +77,15 @@ class DetailAbsensiGuruPage extends StatelessWidget {
     return [
       Text('Foto Bukti', style: judul),
       const SizedBox(height: 8),
-      // Di versi Supabase:
-      // final url = await db.storage.from('absensi-guru').createSignedUrl(a.fotoPath!, 3600);
-      // lalu tampilkan dengan Image.network(url, fit: BoxFit.cover).
       ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: AspectRatio(
           aspectRatio: 4 / 3,
-          child: Container(
-            color: AppColors.softPink,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.photo_camera, size: 48, color: AppColors.inkMuted),
-                const SizedBox(height: 8),
-                Text('Foto dummy\n${a.fotoPath}', textAlign: TextAlign.center),
-              ],
-            ),
-          ),
+          child: _FotoBukti(path: a.fotoPath),
         ),
       ),
       const SizedBox(height: 4),
-      Text(
-        'Diambil ${formatJam(a.waktuFoto!)}',
-        style: Theme.of(context).textTheme.bodySmall,
-      ),
+      Text('Diambil ${formatJam(a.waktuFoto!)}', style: Theme.of(context).textTheme.bodySmall),
 
       const SizedBox(height: 16),
       Text('Lokasi', style: judul),
@@ -105,28 +98,20 @@ class DetailAbsensiGuruPage extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Icon(
-                    a.diLuarArea ? Icons.location_off : Icons.location_on,
-                    color: warnaLokasi,
-                  ),
+                  Icon(a.diLuarArea ? Icons.location_off : Icons.location_on, color: warnaLokasi),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       a.diLuarArea
                           ? 'Di luar area sekolah (${_formatJarak(jarak)} dari sekolah)'
                           : 'Di area sekolah (${_formatJarak(jarak)} dari titik sekolah)',
-                      style: TextStyle(
-                        color: warnaLokasi,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: TextStyle(color: warnaLokasi, fontWeight: FontWeight.w700),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 6),
-              Text(
-                '${a.lat!.toStringAsFixed(6)}, ${a.lng!.toStringAsFixed(6)}',
-              ),
+              Text('${a.lat!.toStringAsFixed(6)}, ${a.lng!.toStringAsFixed(6)}'),
               const SizedBox(height: 8),
               OutlinedButton.icon(
                 onPressed: () => _bukaMaps(context),
@@ -142,15 +127,12 @@ class DetailAbsensiGuruPage extends StatelessWidget {
       Text('Berita Acara', style: judul),
       const SizedBox(height: 8),
       Card(
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Text(a.beritaAcara ?? '-'),
-        ),
+        child: Padding(padding: const EdgeInsets.all(12), child: Text(a.beritaAcara ?? '-')),
       ),
     ];
   }
 
-  List<Widget> _bagianTidakHadir(TextStyle? judul) {
+  List<Widget> _bagianTidakHadir(BuildContext context, TextStyle? judul) {
     final a = item;
     return [
       Text('Keterangan Tidak Hadir', style: judul),
@@ -167,7 +149,8 @@ class DetailAbsensiGuruPage extends StatelessWidget {
               leading: const Icon(Icons.attach_file),
               title: const Text('Surat'),
               subtitle: Text(a.suratPath?.split('/').last ?? 'Tidak ada'),
-              // Versi Supabase: buka dengan createSignedUrl + url_launcher.
+              trailing: a.suratPath == null ? null : const Icon(Icons.open_in_new),
+              onTap: a.suratPath == null ? null : () => _bukaSurat(context, a.suratPath!),
             ),
             ListTile(
               leading: const Icon(Icons.swap_horiz),
@@ -185,7 +168,45 @@ class DetailAbsensiGuruPage extends StatelessWidget {
     ];
   }
 
-  String _formatJarak(double m) => m >= 1000
-      ? '${(m / 1000).toStringAsFixed(1)} km'
-      : '${m.toStringAsFixed(0)} m';
+  String _formatJarak(double m) => m >= 1000 ? '${(m / 1000).toStringAsFixed(1)} km' : '${m.toStringAsFixed(0)} m';
+}
+
+/// Foto bukti dari bucket privat `bukti-absensi-guru` (lewat URL sementara).
+class _FotoBukti extends StatelessWidget {
+  const _FotoBukti({required this.path});
+
+  final String? path;
+
+  Widget _kosong(String pesan) => Container(
+    color: AppColors.softPink,
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.photo_camera, size: 48, color: AppColors.inkMuted),
+        const SizedBox(height: 8),
+        Text(
+          pesan,
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: AppColors.inkMuted),
+        ),
+      ],
+    ),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    if (path == null) return _kosong('Tidak ada foto');
+    return FutureBuilder<String>(
+      future: urlFotoBuktiGuru(path!),
+      builder: (context, snap) {
+        if (snap.hasError) return _kosong('Foto tidak ditemukan');
+        if (!snap.hasData) return const Center(child: CircularProgressIndicator(color: AppColors.pink));
+        return Image.network(
+          snap.data!,
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) => _kosong('Foto tidak dapat dimuat'),
+        );
+      },
+    );
+  }
 }

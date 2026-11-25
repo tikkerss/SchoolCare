@@ -300,7 +300,7 @@ begin
   insert into public.absensi_guru (jadwal_id, tanggal, guru_id, status_kehadiran, foto_url, latitude, longitude,
       akurasi_meter, foto_diambil_pada, keterangan_tidak_hadir, guru_pengganti_id, status_kelas)
   select j.id, v_tgl, j.guru_id, 'tidak_hadir'::public.status_kehadiran_guru, 'dummy/surat-sakit.jpg',
-         -7.2575, 112.7521, 15, ((v_tgl + j.jam_mulai - interval '30 min') at time zone 'Asia/Jakarta'),
+         -6.9147, 107.6098, 15, ((v_tgl + j.jam_mulai - interval '30 min') at time zone 'Asia/Jakarta'),
          'Sakit, surat dokter menyusul.', v_wali[1], 'digantikan'::public.status_kelas
   from public.jadwal_pelajaran j
   where j.kelas_id = v_kelas[1] and j.semester = 'ganjil' and j.hari = 'rabu' and j.guru_id = v_pjok[1]
@@ -310,7 +310,7 @@ begin
       akurasi_meter, foto_diambil_pada, berita_acara, status_kelas)
   select j.id, g.tgl::date, j.guru_id, 'hadir'::public.status_kehadiran_guru,
          format('dummy/%s/%s.jpg', g.tgl::date, j.id),
-         -7.2575 + random() * 0.0005, 112.7521 + random() * 0.0005, 5 + random() * 15,
+         -6.9147 + random() * 0.0005, 107.6098 + random() * 0.0005, 5 + random() * 15,
          ((g.tgl::date + j.jam_mulai + interval '2 min') at time zone 'Asia/Jakarta'),
          format('Pembelajaran %s berjalan lancar. Siswa mengerjakan latihan dan tanya jawab.', m.nama),
          'berlangsung'::public.status_kelas

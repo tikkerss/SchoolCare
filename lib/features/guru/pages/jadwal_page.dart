@@ -1,14 +1,19 @@
-import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:schoolcare/core/theme/app_colors.dart';
+import 'package:schoolcare/core/utils/fmt.dart';
 import 'package:schoolcare/features/auth/providers/auth_provider.dart';
+import 'package:schoolcare/features/guru/data/guru_repository.dart';
+import 'package:schoolcare/features/guru/models/jadwal.dart';
+import 'package:schoolcare/features/guru/pages/absensi_mengajar_page.dart';
+import 'package:schoolcare/features/guru/pages/jadwal_detail_page.dart';
+import 'package:schoolcare/shared/widgets/section_header.dart';
+import 'package:schoolcare/shared/widgets/state_views.dart';
+import 'package:schoolcare/shared/widgets/status_badge.dart';
 import 'package:schoolcare/shared/widgets/ticket_card.dart';
-import '../data/guru_dummy.dart';
-import '../models/jadwal.dart';
-import '../widgets/status_kelas_chip.dart';
-import 'absensi_mengajar_page.dart';
 
+/// Daftar jam pelajaran yang diampu guru hari ini (dari Supabase).
+/// Ketuk satu jam pelajaran untuk absensi mengajar, berita acara, dan daftar siswa.
 class JadwalPage extends StatefulWidget {
   const JadwalPage({super.key});
 
@@ -17,208 +22,208 @@ class JadwalPage extends StatefulWidget {
 }
 
 class _JadwalPageState extends State<JadwalPage> {
-  final _jadwal = List<Jadwal>.of(jadwalHariIni);
+  final _repo = GuruRepository();
+  late Future<List<Jadwal>> _future = _repo.getJadwalHariIni();
 
-  Future<void> _bukaAbsensi(int i) async {
-    if (_jadwal[i].status != StatusKelas.belumAbsen) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Jam pelajaran ini sudah diabsen.')),
-      );
-      return;
-    }
+  void _muatUlang() => setState(() => _future = _repo.getJadwalHariIni());
 
-    final status = await Navigator.push<StatusKelas>(
+  /// Membuka detail jam pelajaran (absensi + daftar siswa). Jadwal dimuat ulang sesudahnya.
+  Future<void> _buka(Jadwal j) async {
+    await Navigator.push<void>(context, MaterialPageRoute(builder: (_) => JadwalDetailPage(jadwal: j)));
+    if (mounted) _muatUlang();
+  }
+
+  /// Pintasan "Absen Mengajar" di kartu kelas yang sedang berjalan.
+  Future<void> _absen(Jadwal j) async {
+    final tersimpan = await Navigator.push<bool>(
       context,
-      MaterialPageRoute(builder: (_) => AbsensiMengajarPage(jadwal: _jadwal[i])),
+      MaterialPageRoute(builder: (_) => AbsensiMengajarPage(jadwal: j)),
     );
-    if (status != null) {
-      setState(() => _jadwal[i] = _jadwal[i].copyWith(status: status));
-    }
+    if (tersimpan == true && mounted) _muatUlang();
   }
 
-  /// '07.00' / '07:00' → menit sejak tengah malam.
-  static int _menit(String jam) {
-    final p = jam.replaceAll('.', ':').split(':');
-    return int.parse(p[0]) * 60 + int.parse(p[1]);
-  }
-
+  /// true kalau jam sekarang ada di rentang jam pelajaran ini (jadwal = hari ini).
   static bool _sedangBerjalan(Jadwal j) {
     final n = DateTime.now();
-    final now = n.hour * 60 + n.minute;
-    return now >= _menit(j.jamMulai) && now < _menit(j.jamSelesai);
+    final sekarang = '${n.hour.toString().padLeft(2, '0')}:${n.minute.toString().padLeft(2, '0')}';
+    return Fmt.jam(j.jamMulai).compareTo(sekarang) <= 0 && sekarang.compareTo(Fmt.jam(j.jamSelesai)) < 0;
   }
 
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
-    final nama = auth.profile?.namaLengkap ?? '';
-    final sudah = _jadwal.where((j) => j.status != StatusKelas.belumAbsen).length;
 
     return Scaffold(
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-          children: [
-            // ---- sapaan
-            Row(children: [
-              Expanded(
-                child: Text.rich(
-                  TextSpan(children: [
-                    const TextSpan(text: 'Halo, '),
-                    // Nama disorot softYellow (pink tidak terbaca di atas latar pink).
-                    TextSpan(text: nama, style: const TextStyle(color: AppColors.softYellow)),
-                  ]),
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.white),
-                ),
-              ),
-              if (auth.isWaliKelas)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(color: AppColors.softYellow, borderRadius: BorderRadius.circular(8)),
-                  child: const Text('Wali Kelas', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
-                ),
-            ]),
-            const SizedBox(height: 4),
-            const Text('Jadwal mengajar hari ini', style: TextStyle(fontSize: 12, color: AppColors.white)),
-            const SizedBox(height: 16),
-
-            // ---- statistik (di kartu putih supaya kotak pink tetap terlihat)
-            SoftCard(
-              padding: const EdgeInsets.all(10),
-              child: Row(children: [
-                Expanded(
-                  child: _KotakStat(nilai: '${_jadwal.length}', label: 'Kelas hari ini', warna: AppColors.pink),
-                ),
-                const SizedBox(width: 8),
-                Expanded(child: _KotakStat(nilai: '$sudah', label: 'Sudah absen', warna: AppColors.orange)),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _KotakStat(
-                    nilai: '${_jadwal.length - sudah}',
-                    label: 'Belum absen',
-                    warna: AppColors.softYellow,
-                  ),
-                ),
-              ]),
-            ),
-
-            // ---- absensi siswa pagi (khusus wali kelas)
-            if (auth.isWaliKelas) ...[
-              const SizedBox(height: 14),
-              SoftCard(
-                warna: AppColors.softYellow,
-                onTap: () => context.push('/wali'),
-                child: Row(children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(14)),
-                    child: const Icon(Icons.how_to_reg, color: AppColors.pink),
-                  ),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text('Absensi siswa pagi', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
-                      Text(
-                        'Isi kehadiran kelas perwalian hari ini',
-                        style: TextStyle(fontSize: 12, color: AppColors.inkMuted),
+        bottom: false,
+        child: RefreshIndicator(
+          onRefresh: () async {
+            _muatUlang();
+            await _future;
+          },
+          child: AsyncView<List<Jadwal>>(
+            future: _future,
+            onRetry: _muatUlang,
+            builder: (context, list) {
+              final sudah = list.where((j) => j.sudahDiabsen).length;
+              return ListView(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                children: [
+                  _Sapaan(nama: auth.profile?.namaLengkap, wali: auth.isWaliKelas),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _KotakStatistik(angka: list.length, label: 'Jam hari ini', warna: AppColors.white),
                       ),
-                    ]),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _KotakStatistik(angka: sudah, label: 'Sudah absen', warna: AppColors.orange),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _KotakStatistik(
+                          angka: list.length - sudah,
+                          label: 'Belum absen',
+                          warna: AppColors.softYellow,
+                        ),
+                      ),
+                    ],
                   ),
-                  const Icon(Icons.chevron_right, color: AppColors.ink),
-                ]),
-              ),
-            ],
-
-            // ---- jadwal
-            const Padding(
-              padding: EdgeInsets.only(top: 20, bottom: 10),
-              child: Text('Jadwal', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.white)),
-            ),
-            for (var i = 0; i < _jadwal.length; i++)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _JadwalCard(
-                  jadwal: _jadwal[i],
-                  berjalan: _sedangBerjalan(_jadwal[i]),
-                  onTap: () => _bukaAbsensi(i),
-                ),
-              ),
-          ],
+                  const SectionHeader('Jadwal Mengajar'),
+                  if (list.isEmpty)
+                    const EmptyState(
+                      message: 'Tidak ada jadwal mengajar hari ini.',
+                      icon: Icons.event_available_outlined,
+                    ),
+                  for (final j in list) ...[
+                    _JadwalCard(
+                      jadwal: j,
+                      berjalan: _sedangBerjalan(j),
+                      onTap: () => _buka(j),
+                      onAbsen: () => _absen(j),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
   }
 }
 
-class _KotakStat extends StatelessWidget {
-  const _KotakStat({required this.nilai, required this.label, required this.warna});
+/// "Halo, Bu Sri" + chip Wali Kelas + tanggal, langsung di atas latar pink.
+class _Sapaan extends StatelessWidget {
+  const _Sapaan({required this.nama, required this.wali});
 
-  final String nilai, label;
+  final String? nama;
+  final bool wali;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        children: [
+          Expanded(
+            child: Text(
+              nama == null ? 'Halo!' : 'Halo, $nama',
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.white, height: 1.25),
+            ),
+          ),
+          if (wali) ...[const SizedBox(width: 8), const StatusPill(label: 'Wali Kelas', gaya: GayaChip.softYellow)],
+        ],
+      ),
+      const SizedBox(height: 4),
+      Text(Fmt.hari(DateTime.now()), style: const TextStyle(fontSize: 12, color: AppColors.white)),
+    ],
+  );
+}
+
+class _KotakStatistik extends StatelessWidget {
+  const _KotakStatistik({required this.angka, required this.label, required this.warna});
+
+  final int angka;
+  final String label;
   final Color warna;
 
   @override
-  Widget build(BuildContext context) {
-    final teks = warna == AppColors.pink ? AppColors.white : AppColors.ink;
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-      decoration: BoxDecoration(color: warna, borderRadius: BorderRadius.circular(16)),
-      child: Column(children: [
-        Text(nilai, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: teks)),
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+    decoration: BoxDecoration(color: warna, borderRadius: BorderRadius.circular(20), boxShadow: AppColors.cardShadow),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
         Text(
-          label,
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(fontSize: 11, color: teks),
+          '$angka',
+          style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.ink, height: 1.1),
         ),
-      ]),
-    );
-  }
+        const SizedBox(height: 2),
+        Text(label, style: const TextStyle(fontSize: 11, color: AppColors.ink)),
+      ],
+    ),
+  );
 }
 
 class _JadwalCard extends StatelessWidget {
+  const _JadwalCard({required this.jadwal, required this.berjalan, required this.onTap, required this.onAbsen});
+
   final Jadwal jadwal;
   final bool berjalan;
   final VoidCallback onTap;
-  const _JadwalCard({required this.jadwal, required this.berjalan, required this.onTap});
+  final VoidCallback onAbsen;
 
   @override
   Widget build(BuildContext context) {
-    final perluAbsen = berjalan && jadwal.status == StatusKelas.belumAbsen;
+    const kecil = TextStyle(fontSize: 11, color: AppColors.inkMuted);
+
     return TicketCard(
-      jamMulai: jadwal.jamMulai,
-      jamSelesai: jadwal.jamSelesai,
+      jamMulai: Fmt.jam(jadwal.jamMulai),
+      jamSelesai: Fmt.jam(jadwal.jamSelesai),
+      labelAtas: 'Jam ${jadwal.jamKe}',
       sorot: berjalan,
       onTap: onTap,
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(jadwal.mapel, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
-              const SizedBox(height: 2),
-              Text(
-                '${jadwal.kelas} • ${jadwal.ruang}',
-                style: const TextStyle(fontSize: 12, color: AppColors.inkMuted),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  jadwal.mapel,
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.ink),
+                ),
               ),
-            ]),
+              const SizedBox(width: 8),
+              StatusBadge(jadwal.statusKelas),
+            ],
           ),
-          const SizedBox(width: 8),
-          StatusKelasChip(status: jadwal.status),
-        ]),
-        if (perluAbsen) ...[
-          const SizedBox(height: 10),
-          FilledButton.icon(
-            style: FilledButton.styleFrom(
-              minimumSize: const Size.fromHeight(40),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          const SizedBox(height: 2),
+          Text(
+            'Kelas ${jadwal.namaKelas} • ${jadwal.ruang ?? '-'}',
+            style: const TextStyle(fontSize: 12, color: AppColors.inkMuted),
+          ),
+          if (jadwal.guruPengganti != null) Text('Pengganti: ${jadwal.guruPengganti}', style: kecil),
+          if (jadwal.pernahDiubah) Text('Diubah ${Fmt.waktu(jadwal.diubahPada!)}', style: kecil),
+          if (berjalan && !jadwal.sudahDiabsen) ...[
+            const SizedBox(height: 10),
+            FilledButton.icon(
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(40),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+              ),
+              icon: const Icon(Icons.how_to_reg_outlined, size: 18),
+              label: const Text('Absen Mengajar'),
+              onPressed: onAbsen,
             ),
-            icon: const Icon(Icons.how_to_reg, size: 18),
-            label: const Text('Absen Mengajar'),
-            onPressed: onTap,
-          ),
+          ],
         ],
-      ]),
+      ),
     );
   }
 }

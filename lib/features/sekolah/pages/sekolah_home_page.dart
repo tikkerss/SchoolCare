@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:schoolcare/core/theme/app_colors.dart';
 import 'package:schoolcare/features/auth/providers/auth_provider.dart';
 import 'package:schoolcare/features/laporan_sekolah/data/laporan_repository.dart';
+import 'package:schoolcare/features/laporan_sekolah/data/supabase_laporan_repository.dart';
 import 'package:schoolcare/features/laporan_sekolah/pages/laporan_absensi_guru_page.dart';
 import 'package:schoolcare/features/laporan_sekolah/pages/pantau_rapor_page.dart';
 import 'package:schoolcare/features/laporan_sekolah/pages/rekap_kehadiran_sekolah_page.dart';
@@ -30,8 +31,8 @@ class SekolahHomePage extends StatefulWidget {
 
 class _SekolahHomePageState extends State<SekolahHomePage> {
   final _repo = SekolahRepository();
-  // TODO(Backend): ganti dengan versi Supabase.
-  final LaporanRepository _laporan = DummyLaporanRepository();
+  // Untuk mencoba tampilan tanpa Supabase, ganti ke DummyLaporanRepository().
+  final LaporanRepository _laporan = SupabaseLaporanRepository();
   late Future<TahunAjaran?> _ta = _repo.getTahunAjaranAktif();
 
   void _muatUlang() => setState(() => _ta = _repo.getTahunAjaranAktif());

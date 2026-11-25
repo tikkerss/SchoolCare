@@ -1,8 +1,9 @@
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
-import '../models/bukti_foto.dart';
+import 'package:schoolcare/features/guru/models/bukti_foto.dart';
 
 class BuktiFotoException implements Exception {
   final String pesan;
@@ -12,6 +13,7 @@ class BuktiFotoException implements Exception {
   String toString() => pesan;
 }
 
+/// Mengambil foto bukti dari kamera + koordinat GPS + waktu.
 class BuktiFotoService {
   static final _picker = ImagePicker();
 
@@ -46,6 +48,7 @@ class BuktiFotoService {
       file: File(foto.path),
       latitude: posisi.latitude,
       longitude: posisi.longitude,
+      akurasiMeter: posisi.accuracy,
       waktu: DateTime.now(),
     );
   }
