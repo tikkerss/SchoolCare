@@ -26,7 +26,7 @@ enum StatusKelas {
 }
 
 /// Ganti dengan koordinat sekolah yang asli.
-const lokasiSekolah = (lat: -6.9147, lng: 107.6098);
+const lokasiSekolah = (lat: -7.2852792, lng: 112.7952975); // Gedung Tower 2 ITS
 const radiusSekolahMeter = 200.0;
 
 /// Jarak dua titik GPS dalam meter (rumus haversine).
