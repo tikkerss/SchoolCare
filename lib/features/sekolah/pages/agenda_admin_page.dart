@@ -5,6 +5,7 @@ import 'package:schoolcare/features/sekolah/data/sekolah_repository.dart';
 import 'package:schoolcare/features/sekolah/widgets/admin_ui.dart';
 import 'package:schoolcare/shared/data/info_models.dart';
 import 'package:schoolcare/shared/widgets/state_views.dart';
+import 'package:schoolcare/shared/widgets/permukaan.dart';
 
 const _kategoriAgenda = {
   'kegiatan': 'Kegiatan',
@@ -42,7 +43,7 @@ class _AgendaAdminPageState extends State<AgendaAdminPage> {
           icon: const Icon(Icons.add),
           label: const Text('Agenda baru'),
         ),
-        body: RefreshIndicator(
+        body: LembarPutih(child: RefreshIndicator(
           onRefresh: () async => _muatUlang(),
           child: AsyncView<List<Agenda>>(
             future: _future,
@@ -73,7 +74,7 @@ class _AgendaAdminPageState extends State<AgendaAdminPage> {
               },
             ),
           ),
-        ),
+        )),
       );
 }
 
@@ -178,7 +179,7 @@ class _AgendaFormState extends State<_AgendaForm> {
             if (widget.agenda != null) IconButton(icon: const Icon(Icons.delete_outline), onPressed: _hapus),
           ],
         ),
-        body: Form(
+        body: LembarPutih(child: Form(
           key: _formKey,
           child: ListView(padding: const EdgeInsets.all(16), children: [
             TextFormField(
@@ -263,6 +264,6 @@ class _AgendaFormState extends State<_AgendaForm> {
             const SizedBox(height: 24),
             TombolSimpan(menyimpan: _menyimpan, onPressed: _simpan),
           ]),
-        ),
+        )),
       );
 }

@@ -1,23 +1,26 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:schoolcare/core/theme/app_colors.dart';
+import 'package:schoolcare/shared/widgets/status_badge.dart';
 
 import '../data/laporan_models.dart';
 
-const _hijau = Color(0xFF2E9E5B);
-const _biru = Color(0xFF1E6FD9);
-const _merah = Color(0xFFD64545);
-const _abu = Color(0xFF8A8A8A);
-
-/// Warna + label gabungan kehadiran guru dan status kelas.
-(Color, String) infoStatusGuru(AbsensiGuruItem a) =>
+/// Gaya + label gabungan kehadiran guru dan status kelas.
+(GayaChip, String) gayaStatusGuru(AbsensiGuruItem a) =>
     switch ((a.status, a.statusKelas)) {
-      (StatusKehadiranGuru.hadir, _) => (_hijau, 'Hadir'),
+      (StatusKehadiranGuru.hadir, _) => (GayaChip.pink, 'Hadir'),
       (StatusKehadiranGuru.tidakHadir, StatusKelas.digantikan) => (
-        _biru,
+        GayaChip.orange,
         'Digantikan',
       ),
-      (StatusKehadiranGuru.tidakHadir, _) => (_merah, 'Dibatalkan'),
-      (StatusKehadiranGuru.belumAbsen, _) => (_abu, 'Belum absen'),
+      (StatusKehadiranGuru.tidakHadir, _) => (GayaChip.putus, 'Dibatalkan'),
+      (StatusKehadiranGuru.belumAbsen, _) => (GayaChip.putih, 'Belum absen'),
     };
+
+/// Warna + label gabungan kehadiran guru dan status kelas.
+(Color, String) infoStatusGuru(AbsensiGuruItem a) {
+  final (gaya, label) = gayaStatusGuru(a);
+  return (gaya.aksen, label);
+}
 
 class StatusGuruBadge extends StatelessWidget {
   const StatusGuruBadge(this.item, {super.key});
@@ -26,23 +29,8 @@ class StatusGuruBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (warna, label) = infoStatusGuru(item);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: warna.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: warna),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: warna,
-          fontWeight: FontWeight.w600,
-          fontSize: 12,
-        ),
-      ),
-    );
+    final (gaya, label) = gayaStatusGuru(item);
+    return StatusPill(label: label, gaya: gaya);
   }
 }
 
@@ -70,9 +58,19 @@ class PemilihPeriode extends StatelessWidget {
           icon: const Icon(Icons.chevron_left),
           onPressed: onSebelumnya,
         ),
-        TextButton(
-          onPressed: onTapLabel,
-          child: Text(label, style: Theme.of(context).textTheme.titleMedium),
+        // Flexible + FittedBox: label tanggal panjang mengecil, tidak overflow.
+        Flexible(
+          child: TextButton(
+            onPressed: onTapLabel,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
+                maxLines: 1,
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink),
+              ),
+            ),
+          ),
         ),
         IconButton(
           icon: const Icon(Icons.chevron_right),

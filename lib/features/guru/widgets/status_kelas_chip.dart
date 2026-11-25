@@ -1,4 +1,6 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:schoolcare/shared/widgets/status_badge.dart';
+
 import '../models/jadwal.dart';
 
 class StatusKelasChip extends StatelessWidget {
@@ -7,23 +9,12 @@ class StatusKelasChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = switch (status) {
-      StatusKelas.belumAbsen => Colors.grey,
-      StatusKelas.berlangsung => Colors.green,
-      StatusKelas.digantikan => Colors.orange,
-      StatusKelas.dibatalkan => Colors.red,
+    final gaya = switch (status) {
+      StatusKelas.belumAbsen => GayaChip.putih,
+      StatusKelas.berlangsung => GayaChip.pink,
+      StatusKelas.digantikan => GayaChip.orange,
+      StatusKelas.dibatalkan => GayaChip.putus,
     };
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        status.label,
-        style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600),
-      ),
-    );
+    return StatusPill(label: status.label, gaya: gaya);
   }
 }

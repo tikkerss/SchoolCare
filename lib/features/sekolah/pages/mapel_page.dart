@@ -3,6 +3,7 @@ import 'package:schoolcare/features/sekolah/data/sekolah_models.dart';
 import 'package:schoolcare/features/sekolah/data/sekolah_repository.dart';
 import 'package:schoolcare/features/sekolah/widgets/admin_ui.dart';
 import 'package:schoolcare/shared/widgets/state_views.dart';
+import 'package:schoolcare/shared/widgets/permukaan.dart';
 
 /// Kelola daftar mata pelajaran (dipakai saat menyusun jadwal).
 class MapelPage extends StatefulWidget {
@@ -85,7 +86,7 @@ class _MapelPageState extends State<MapelPage> {
           icon: const Icon(Icons.add),
           label: const Text('Tambah'),
         ),
-        body: AsyncView<List<MataPelajaran>>(
+        body: LembarPutih(child: AsyncView<List<MataPelajaran>>(
           future: _future,
           onRetry: _muatUlang,
           isEmpty: (d) => d.isEmpty,
@@ -106,6 +107,6 @@ class _MapelPageState extends State<MapelPage> {
               );
             },
           ),
-        ),
+        )),
       );
 }

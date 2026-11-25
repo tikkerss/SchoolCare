@@ -1,10 +1,14 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:schoolcare/core/theme/app_colors.dart';
 import 'package:schoolcare/features/orang_tua/data/ortu_models.dart';
 import 'package:schoolcare/features/orang_tua/data/ortu_repository.dart';
 import 'package:schoolcare/features/orang_tua/pages/form_izin_page.dart';
 import 'package:schoolcare/features/orang_tua/widgets/ortu_ui.dart';
+import 'package:schoolcare/shared/widgets/emotikon_kehadiran.dart';
+import 'package:schoolcare/shared/widgets/status_badge.dart';
+import 'package:schoolcare/shared/widgets/ticket_card.dart';
 
-/// Tab Kehadiran: rekap & daftar kehadiran per bulan, ter-update otomatis.
+/// Tab Kehadiran: rekap & kalender kehadiran per bulan, ter-update otomatis.
 /// Ketuk satu hari untuk melihat riwayat perubahan statusnya.
 class KehadiranTab extends StatefulWidget {
   const KehadiranTab({super.key, required this.anak});
@@ -17,11 +21,19 @@ class KehadiranTab extends StatefulWidget {
 
 class _KehadiranTabState extends State<KehadiranTab> {
   static const _urutanStatus = ['hadir', 'terlambat', 'izin', 'sakit', 'alpa'];
+  static const _namaHari = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum'];
 
   final _repo = OrtuRepository();
   DateTime _bulan = DateTime(DateTime.now().year, DateTime.now().month);
   late Future<List<AbsensiHarian>> _future = _muat();
   late final VoidCallback _berhentiPantau;
+
+  /// Tanggal yang dipilih di kalender (null = belum memilih).
+  DateTime? _terpilih = DateUtils.dateOnly(DateTime.now());
+
+  /// Riwayat status untuk absensi yang dipilih, disimpan per id absensi.
+  String? _riwayatId;
+  Future<List<RiwayatStatus>>? _riwayat;
 
   @override
   void initState() {
@@ -39,11 +51,24 @@ class _KehadiranTabState extends State<KehadiranTab> {
 
   Future<List<AbsensiHarian>> _muat() => _repo.getAbsensiBulan(widget.anak.siswaId, _bulan);
 
-  void _muatUlang() => setState(() => _future = _muat());
+  void _muatUlang() => setState(() {
+        _future = _muat();
+        _riwayatId = null; // riwayat ikut dimuat ulang
+      });
 
   void _gantiBulan(int geser) {
     _bulan = DateTime(_bulan.year, _bulan.month + geser);
+    final hariIni = DateUtils.dateOnly(DateTime.now());
+    _terpilih = DateUtils.isSameMonth(_bulan, hariIni) ? hariIni : null;
     _muatUlang();
+  }
+
+  Future<List<RiwayatStatus>> _riwayatUntuk(AbsensiHarian a) {
+    if (_riwayatId != a.id || _riwayat == null) {
+      _riwayatId = a.id;
+      _riwayat = _repo.getRiwayatStatus(a.id);
+    }
+    return _riwayat!;
   }
 
   @override
@@ -55,22 +80,28 @@ class _KehadiranTabState extends State<KehadiranTab> {
       Padding(
         padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
         child: Row(children: [
-          IconButton(icon: const Icon(Icons.chevron_left), onPressed: () => _gantiBulan(-1)),
+          IconButton(
+            icon: const Icon(Icons.chevron_left),
+            color: AppColors.white,
+            onPressed: () => _gantiBulan(-1),
+          ),
           Expanded(
             child: Text(
               OrtuFmt.bulan(_bulan),
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleMedium,
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.white),
             ),
           ),
           IconButton(
             icon: const Icon(Icons.chevron_right),
+            color: AppColors.white,
+            disabledColor: AppColors.softPink,
             onPressed: _bulan == bulanIni ? null : () => _gantiBulan(1),
           ),
         ]),
       ),
 
-      // ---- rekap + daftar
+      // ---- rekap + kalender + detail
       Expanded(
         child: RefreshIndicator(
           onRefresh: () async {
@@ -80,30 +111,22 @@ class _KehadiranTabState extends State<KehadiranTab> {
           child: TungguData<List<AbsensiHarian>>(
             future: _future,
             onCobaLagi: _muatUlang,
-            builder: (context, list) => ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                _rekap(list),
-                const SizedBox(height: 12),
-                if (list.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 32),
-                    child: KosongView(pesan: 'Belum ada data kehadiran di bulan ini.'),
-                  ),
-                for (final a in list)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Card(
-                      child: ListTile(
-                        title: Text(OrtuFmt.hari(a.tanggal)),
-                        subtitle: a.keterangan == null ? null : Text(a.keterangan!),
-                        trailing: StatusChip(a.status),
-                        onTap: () => _riwayat(a),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
+            builder: (context, list) {
+              final perTanggal = {for (final a in list) DateUtils.dateOnly(a.tanggal): a};
+              final t = _terpilih;
+              return ListView(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                children: [
+                  _rekap(list),
+                  const SizedBox(height: 14),
+                  _kalender(perTanggal),
+                  if (t != null) ...[
+                    const SizedBox(height: 14),
+                    _detail(t, perTanggal[t]),
+                  ],
+                ],
+              );
+            },
           ),
         ),
       ),
@@ -112,8 +135,10 @@ class _KehadiranTabState extends State<KehadiranTab> {
       SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+          // Tombol putih bertulisan pink karena langsung di atas latar pink.
           child: FilledButton.icon(
+            style: FilledButton.styleFrom(backgroundColor: AppColors.white, foregroundColor: AppColors.pink),
             icon: const Icon(Icons.edit_note),
             label: const Text('Ajukan izin / sakit'),
             onPressed: () => Navigator.of(context).push(
@@ -125,77 +150,195 @@ class _KehadiranTabState extends State<KehadiranTab> {
     ]);
   }
 
+  // ------------------------------------------------------------ rekap bulan
   Widget _rekap(List<AbsensiHarian> list) {
     final hitung = {for (final s in _urutanStatus) s: list.where((a) => a.status == s).length};
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-        child: Wrap(
-          alignment: WrapAlignment.spaceAround,
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            for (final e in hitung.entries)
-              Column(mainAxisSize: MainAxisSize.min, children: [
-                Text(
-                  '${e.value}',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+    return SoftCard(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+        for (final e in hitung.entries)
+          Column(mainAxisSize: MainAxisSize.min, children: [
+            EmotikonKehadiran(e.key, size: 36),
+            const SizedBox(height: 6),
+            Text('${e.value}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+            Text(StatusBadge.labelOf(e.key), style: const TextStyle(fontSize: 11, color: AppColors.inkMuted)),
+          ]),
+      ]),
+    );
+  }
+
+  // ---------------------------------------------------------- kalender Sen–Jum
+  Widget _kalender(Map<DateTime, AbsensiHarian> perTanggal) {
+    final hariIni = DateUtils.dateOnly(DateTime.now());
+    final jumlahHari = DateUtils.getDaysInMonth(_bulan.year, _bulan.month);
+
+    // Susun tanggal hari kerja ke dalam minggu (5 kolom).
+    final minggu = <List<DateTime?>>[];
+    var baris = List<DateTime?>.filled(5, null);
+    for (var d = 1; d <= jumlahHari; d++) {
+      final tgl = DateTime(_bulan.year, _bulan.month, d);
+      if (tgl.weekday > 5) continue;
+      baris[tgl.weekday - 1] = tgl;
+      if (tgl.weekday == 5) {
+        minggu.add(baris);
+        baris = List<DateTime?>.filled(5, null);
+      }
+    }
+    if (baris.any((x) => x != null)) minggu.add(baris);
+
+    return SoftCard(
+      padding: const EdgeInsets.fromLTRB(8, 14, 8, 10),
+      child: Column(children: [
+        Row(children: [
+          for (final h in _namaHari)
+            Expanded(
+              child: Text(
+                h,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.inkMuted),
+              ),
+            ),
+        ]),
+        const SizedBox(height: 8),
+        for (final w in minggu)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Row(children: [
+              for (final tgl in w)
+                Expanded(
+                  child: tgl == null
+                      ? const SizedBox(height: 52)
+                      : _selHari(tgl, perTanggal[tgl], belumLewat: tgl.isAfter(hariIni)),
                 ),
-                const SizedBox(height: 4),
-                StatusChip(e.key),
-              ]),
-          ],
+            ]),
+          ),
+      ]),
+    );
+  }
+
+  Widget _selHari(DateTime tgl, AbsensiHarian? a, {required bool belumLewat}) {
+    final dipilih = _terpilih != null && DateUtils.isSameDay(_terpilih, tgl);
+    const ukuran = 34.0;
+
+    final Widget isi;
+    if (a != null) {
+      isi = EmotikonKehadiran(a.status, size: ukuran);
+    } else {
+      isi = Container(
+        width: ukuran,
+        height: ukuran,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: belumLewat ? Border.all(color: AppColors.softPink, width: 1.5) : null,
         ),
+        child: Text(
+          '${tgl.day}',
+          style: TextStyle(fontSize: 12, color: belumLewat ? AppColors.inkFaint : AppColors.ink),
+        ),
+      );
+    }
+
+    return InkResponse(
+      onTap: () => setState(() => _terpilih = tgl),
+      radius: 26,
+      // Tinggi minimal 52 (bukan tinggi tetap): isi sel = cincin 42 + angka ±11, jadi
+      // SizedBox(height: 52) dulu overflow ±1 px (lebih besar lagi kalau teks diperbesar).
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 52),
+        child: Column(mainAxisSize: MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.center, children: [
+          Container(
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: dipilih ? AppColors.pink : Colors.transparent, width: 2),
+            ),
+            child: isi,
+          ),
+          if (a != null)
+            Text('${tgl.day}', style: const TextStyle(fontSize: 9, color: AppColors.inkMuted, height: 1.2)),
+        ]),
       ),
     );
   }
 
-  /// Bottom sheet riwayat perubahan status (siapa mengubah & jam berapa).
-  void _riwayat(AbsensiHarian a) {
-    final future = _repo.getRiwayatStatus(a.id);
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (_) => FutureBuilder<List<RiwayatStatus>>(
-        future: future,
-        builder: (context, snap) {
-          if (snap.connectionState != ConnectionState.done) {
-            return const SizedBox(height: 160, child: MemuatView());
-          }
-          if (snap.hasError) return const SizedBox(height: 160, child: GagalView());
-          final list = snap.data!;
-          return ListView(
-            shrinkWrap: true,
-            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-            children: [
-              Text('Riwayat status', style: Theme.of(context).textTheme.titleLarge),
-              Text(OrtuFmt.hari(a.tanggal), style: const TextStyle(color: OrtuWarna.textSecondary)),
-              const SizedBox(height: 12),
-              if (list.isEmpty) const Text('Belum ada riwayat.'),
-              for (final r in list)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: Text(OrtuFmt.jamMenit(r.waktu), style: const TextStyle(fontWeight: FontWeight.w600)),
-                  title: Wrap(
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    spacing: 6,
-                    children: [
-                      if (r.statusLama != null) ...[
-                        StatusChip(r.statusLama!),
-                        const Icon(Icons.arrow_forward, size: 16),
-                      ],
-                      StatusChip(r.statusBaru),
-                    ],
-                  ),
-                  subtitle: Text([
-                    if (r.keterangan != null) r.keterangan!,
-                    if (r.oleh != null) 'oleh ${r.oleh}',
-                  ].join(' · ')),
-                ),
-            ],
-          );
-        },
-      ),
+  // ------------------------------------------------------ detail hari terpilih
+  Widget _detail(DateTime tgl, AbsensiHarian? a) {
+    return SoftCard(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Expanded(
+            child: Text(OrtuFmt.hari(tgl), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+          ),
+          if (a != null) StatusChip(a.status),
+        ]),
+        if (a == null)
+          const Padding(
+            padding: EdgeInsets.only(top: 6),
+            child: Text('Belum ada data kehadiran.', style: TextStyle(fontSize: 12, color: AppColors.inkMuted)),
+          )
+        else ...[
+          if (a.keterangan != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(a.keterangan!, style: const TextStyle(fontSize: 12)),
+            ),
+          const SizedBox(height: 12),
+          const Text('Riwayat perubahan', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 6),
+          FutureBuilder<List<RiwayatStatus>>(
+            future: _riwayatUntuk(a),
+            builder: (context, snap) {
+              if (snap.connectionState != ConnectionState.done) {
+                return const SizedBox(height: 60, child: MemuatView());
+              }
+              if (snap.hasError) return const SizedBox(height: 100, child: GagalView());
+              final list = snap.data!;
+              if (list.isEmpty) {
+                return const Text('Belum ada riwayat.', style: TextStyle(fontSize: 12, color: AppColors.inkMuted));
+              }
+              return Column(children: [for (final r in list) _barisRiwayat(r)]);
+            },
+          ),
+        ],
+      ]),
+    );
+  }
+
+  Widget _barisRiwayat(RiwayatStatus r) {
+    final ket = [
+      if (r.keterangan != null) r.keterangan!,
+      if (r.oleh != null) 'oleh ${r.oleh}',
+    ].join(' · ');
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        SizedBox(
+          width: 48,
+          child: Text(OrtuFmt.jamMenit(r.waktu), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+        ),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 6,
+              runSpacing: 4,
+              children: [
+                if (r.statusLama != null) ...[
+                  StatusChip(r.statusLama!),
+                  const Icon(Icons.arrow_forward, size: 14, color: AppColors.inkMuted),
+                ],
+                StatusChip(r.statusBaru),
+              ],
+            ),
+            if (ket.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(ket, style: const TextStyle(fontSize: 11, color: AppColors.inkMuted)),
+              ),
+          ]),
+        ),
+      ]),
     );
   }
 }

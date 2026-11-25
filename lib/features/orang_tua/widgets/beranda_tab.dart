@@ -1,22 +1,36 @@
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
+import 'package:schoolcare/core/theme/app_colors.dart';
 import 'package:schoolcare/features/orang_tua/data/ortu_models.dart';
 import 'package:schoolcare/features/orang_tua/data/ortu_repository.dart';
 import 'package:schoolcare/features/orang_tua/pages/aktivitas_harian_page.dart';
 import 'package:schoolcare/features/orang_tua/pages/form_izin_page.dart';
 import 'package:schoolcare/features/orang_tua/pages/kontak_guru_page.dart';
 import 'package:schoolcare/features/orang_tua/widgets/ortu_ui.dart';
+import 'package:schoolcare/shared/widgets/emotikon_kehadiran.dart';
+import 'package:schoolcare/shared/widgets/status_badge.dart';
+import 'package:schoolcare/shared/widgets/ticket_card.dart';
 
 typedef _DataBeranda = (AbsensiHarian?, List<AktivitasKelas>, List<PengumumanSingkat>);
 
 /// Tab Beranda: kehadiran hari ini, pelajaran yang sedang berlangsung,
 /// menu cepat, dan pengumuman terbaru.
 class BerandaTab extends StatefulWidget {
-  const BerandaTab({super.key, required this.anak, required this.onLihatKehadiran});
+  const BerandaTab({
+    super.key,
+    required this.anak,
+    required this.onLihatKehadiran,
+    this.onLihatAkademik,
+    this.pemilihAnak,
+  });
 
   final Anak anak;
   final VoidCallback onLihatKehadiran;
+  final VoidCallback? onLihatAkademik;
+
+  /// Chip kelas / pemilih anak dari halaman induk (ditaruh di samping tanggal).
+  final Widget? pemilihAnak;
 
   @override
   State<BerandaTab> createState() => _BerandaTabState();
@@ -56,6 +70,13 @@ class _BerandaTabState extends State<BerandaTab> {
 
   void _buka(Widget halaman) => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => halaman));
 
+  /// "Andi Pratama" → "Andi"
+  static String _namaDepan(String nama) => nama.trim().split(' ').first;
+
+  static const _ket = TextStyle(fontSize: 12, color: AppColors.inkMuted);
+  static const _ketDiPink = TextStyle(fontSize: 12, color: AppColors.white);
+  static const _judulKartu = TextStyle(fontSize: 14, fontWeight: FontWeight.w700);
+
   @override
   Widget build(BuildContext context) {
     final anak = widget.anak;
@@ -73,73 +94,164 @@ class _BerandaTabState extends State<BerandaTab> {
           final berlangsung = aktivitas.where((a) => a.sedangBerlangsung);
           final sekarang = berlangsung.isEmpty ? null : berlangsung.first;
 
-          return ListView(padding: const EdgeInsets.all(16), children: [
-            Text(OrtuFmt.hari(DateTime.now()), style: const TextStyle(color: OrtuWarna.textSecondary)),
-            const SizedBox(height: 12),
+          return ListView(padding: const EdgeInsets.fromLTRB(20, 16, 20, 24), children: [
+            // ---- judul
+            Text.rich(
+              TextSpan(children: [
+                const TextSpan(text: 'Hari ini, '),
+                // Nama anak disorot softYellow (pink tidak terbaca di atas latar pink).
+                TextSpan(text: _namaDepan(anak.nama), style: const TextStyle(color: AppColors.softYellow)),
+                const TextSpan(text: ' di sekolah'),
+              ]),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.white, height: 1.25),
+            ),
+            const SizedBox(height: 6),
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text(OrtuFmt.hari(DateTime.now()), style: _ketDiPink),
+                if (widget.pemilihAnak != null) widget.pemilihAnak!,
+              ],
+            ),
+            const SizedBox(height: 16),
 
             // ---- Kehadiran hari ini
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.fact_check_outlined),
-                title: const Text('Kehadiran hari ini'),
-                subtitle: Text(
-                  absen == null
-                      ? 'Belum diabsen wali kelas'
-                      : absen.keterangan ?? 'Diperbarui ${OrtuFmt.jamMenit(absen.diperbarui)}',
+            SoftCard(
+              warna: AppColors.softYellow,
+              onTap: widget.onLihatKehadiran,
+              child: Row(children: [
+                EmotikonKehadiran(absen?.status, size: 64),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    const Text('Kehadiran hari ini', style: TextStyle(fontSize: 11, color: AppColors.inkMuted)),
+                    const SizedBox(height: 2),
+                    Text(
+                      absen == null ? 'Belum diabsen' : StatusBadge.labelOf(absen.status),
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      absen == null
+                          ? 'Wali kelas belum mengisi absensi pagi'
+                          : absen.keterangan ?? 'Diperbarui ${OrtuFmt.jamMenit(absen.diperbarui)}',
+                      style: _ket,
+                    ),
+                  ]),
                 ),
-                trailing: absen == null ? null : StatusChip(absen.status),
-                onTap: widget.onLihatKehadiran,
-              ),
+                const Icon(Icons.chevron_right, color: AppColors.ink),
+              ]),
             ),
-            const SizedBox(height: 12),
 
             // ---- Pelajaran sekarang
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.class_outlined),
-                title: Text(sekarang == null ? 'Tidak ada pelajaran berlangsung' : 'Sekarang: ${sekarang.mapel}'),
-                subtitle: Text(
-                  sekarang == null
-                      ? 'Lihat semua aktivitas kelas hari ini'
-                      : sekarang.infoKegiatan ??
-                          '${OrtuFmt.jam(sekarang.jamMulai)}–${OrtuFmt.jam(sekarang.jamSelesai)} · ${sekarang.guruMengajar}',
-                ),
-                trailing: sekarang == null ? const Icon(Icons.chevron_right) : StatusChip(sekarang.statusKelas),
+            const JudulBagian('Sekarang'),
+            if (sekarang == null)
+              SoftCard(
                 onTap: () => _buka(AktivitasHarianPage(anak: anak)),
+                child: const Row(children: [
+                  Expanded(
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text('Tidak ada pelajaran berlangsung', style: _judulKartu),
+                      SizedBox(height: 2),
+                      Text('Lihat semua aktivitas kelas hari ini', style: _ket),
+                    ]),
+                  ),
+                  Icon(Icons.chevron_right, color: AppColors.ink),
+                ]),
+              )
+            else
+              TicketCard(
+                jamMulai: OrtuFmt.jam(sekarang.jamMulai),
+                jamSelesai: OrtuFmt.jam(sekarang.jamSelesai),
+                labelAtas: 'Jam ${sekarang.jamKe}',
+                sorot: true,
+                onTap: () => _buka(AktivitasHarianPage(anak: anak)),
+                child: Row(children: [
+                  Expanded(
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text(sekarang.mapel, style: _judulKartu),
+                      const SizedBox(height: 2),
+                      Text(
+                        sekarang.infoKegiatan ??
+                            [sekarang.guruMengajar, if (sekarang.ruang != null) sekarang.ruang!].join(' · '),
+                        style: _ket,
+                      ),
+                    ]),
+                  ),
+                  const SizedBox(width: 8),
+                  StatusChip(sekarang.statusKelas),
+                ]),
               ),
-            ),
 
             // ---- Menu
             const JudulBagian('Menu'),
-            GridView.count(
-              crossAxisCount: 3,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-              children: [
-                MenuKotak(ikon: Icons.edit_note, label: 'Izin / Sakit', onTap: () => _buka(FormIzinPage(anak: anak))),
-                MenuKotak(
-                  ikon: Icons.timeline,
-                  label: 'Aktivitas Harian',
-                  onTap: () => _buka(AktivitasHarianPage(anak: anak)),
-                ),
-                MenuKotak(ikon: Icons.chat_outlined, label: 'Kontak Guru', onTap: () => _buka(KontakGuruPage(anak: anak))),
-              ],
+            SoftCard(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+              // Row (bukan GridView rasio tetap) supaya tinggi mengikuti isi dan tidak overflow
+              // saat label 2 baris / ukuran teks diperbesar.
+              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                for (final m in <Widget>[
+                    MenuKotak(
+                      ikon: Icons.edit_note,
+                      label: 'Izin / Sakit',
+                      warna: AppColors.pink,
+                      onTap: () => _buka(FormIzinPage(anak: anak)),
+                    ),
+                    MenuKotak(
+                      ikon: Icons.timeline,
+                      label: 'Aktivitas',
+                      warna: AppColors.orange,
+                      onTap: () => _buka(AktivitasHarianPage(anak: anak)),
+                    ),
+                    MenuKotak(
+                      ikon: Icons.assignment_outlined,
+                      label: 'Tugas',
+                      warna: AppColors.softPink,
+                      onTap: widget.onLihatAkademik ?? () {},
+                    ),
+                    MenuKotak(
+                      ikon: Icons.chat_outlined,
+                      label: 'Chat Guru',
+                      warna: AppColors.softYellow,
+                      onTap: () => _buka(KontakGuruPage(anak: anak)),
+                    ),
+                ])
+                  Expanded(child: m),
+              ]),
             ),
 
             // ---- Pengumuman terbaru
-            const JudulBagian('Pengumuman terbaru'),
-            if (pengumuman.isEmpty) const Text('Belum ada pengumuman.'),
+            const JudulBagian('Pengumuman'),
+            if (pengumuman.isEmpty) const Text('Belum ada pengumuman.', style: _ketDiPink),
             for (final p in pengumuman)
               Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Card(
-                  child: ListTile(
-                    title: Text(p.judul),
-                    subtitle: Text('${OrtuFmt.tanggal(p.tanggal)} · ${p.isi}', maxLines: 2, overflow: TextOverflow.ellipsis),
-                    onTap: () => _detailPengumuman(p),
-                  ),
+                padding: const EdgeInsets.only(bottom: 10),
+                child: SoftCard(
+                  warna: AppColors.softYellow,
+                  onTap: () => _detailPengumuman(p),
+                  child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    const Icon(Icons.campaign_outlined, color: AppColors.ink),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text(p.judul, style: _judulKartu),
+                        const SizedBox(height: 2),
+                        Text(
+                          p.isi,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 12, color: AppColors.ink),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          OrtuFmt.tanggal(p.tanggal),
+                          style: const TextStyle(fontSize: 11, color: AppColors.inkMuted),
+                        ),
+                      ]),
+                    ),
+                  ]),
                 ),
               ),
           ]);
@@ -155,11 +267,11 @@ class _BerandaTabState extends State<BerandaTab> {
           shrinkWrap: true,
           padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
           children: [
-            Text(p.judul, style: Theme.of(context).textTheme.titleLarge),
+            Text(p.judul, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
             const SizedBox(height: 4),
-            Text(OrtuFmt.waktu(p.tanggal), style: const TextStyle(color: OrtuWarna.textSecondary)),
+            Text(OrtuFmt.waktu(p.tanggal), style: _ket),
             const Divider(height: 32),
-            Text(p.isi),
+            Text(p.isi, style: const TextStyle(fontSize: 13)),
           ],
         ),
       );

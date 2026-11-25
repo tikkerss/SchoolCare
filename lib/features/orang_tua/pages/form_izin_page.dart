@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:schoolcare/features/orang_tua/data/ortu_models.dart';
 import 'package:schoolcare/features/orang_tua/data/ortu_repository.dart';
 import 'package:schoolcare/features/orang_tua/widgets/ortu_ui.dart';
+import 'package:schoolcare/shared/widgets/permukaan.dart';
 
 /// Form pengajuan izin / sakit oleh orang tua.
 /// Setelah dikirim, status kehadiran anak langsung berubah pada tanggal yang dipilih
@@ -100,7 +101,7 @@ class _FormIzinPageState extends State<FormIzinPage> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Izin / Sakit')),
-      body: Form(
+      body: LembarPutih(child: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -176,7 +177,7 @@ class _FormIzinPageState extends State<FormIzinPage> {
             ),
           ],
         ),
-      ),
+      )),
     );
   }
 }

@@ -5,6 +5,7 @@ import 'package:schoolcare/features/sekolah/data/sekolah_models.dart';
 import 'package:schoolcare/features/sekolah/data/sekolah_repository.dart';
 import 'package:schoolcare/features/sekolah/widgets/admin_ui.dart';
 import 'package:schoolcare/shared/widgets/state_views.dart';
+import 'package:schoolcare/shared/widgets/permukaan.dart';
 
 /// Kelola tahun ajaran. Hanya satu yang boleh aktif; semester aktif menentukan jadwal yang tampil.
 class TahunAjaranPage extends StatefulWidget {
@@ -40,7 +41,7 @@ class _TahunAjaranPageState extends State<TahunAjaranPage> {
           icon: const Icon(Icons.add),
           label: const Text('Tambah'),
         ),
-        body: AsyncView<List<TahunAjaran>>(
+        body: LembarPutih(child: AsyncView<List<TahunAjaran>>(
           future: _future,
           onRetry: _muatUlang,
           isEmpty: (d) => d.isEmpty,
@@ -53,7 +54,7 @@ class _TahunAjaranPageState extends State<TahunAjaranPage> {
               final ta = list[i];
               return Card(
                 child: ListTile(
-                  title: Text(ta.nama, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  title: Text(ta.nama, style: const TextStyle(fontWeight: FontWeight.w700)),
                   subtitle: Text('${Fmt.tanggal(ta.tanggalMulai)} – ${Fmt.tanggal(ta.tanggalSelesai)}\n'
                       'Semester aktif: ${hurufBesarAwal(ta.semesterAktif)}'),
                   isThreeLine: true,
@@ -68,7 +69,7 @@ class _TahunAjaranPageState extends State<TahunAjaranPage> {
               );
             },
           ),
-        ),
+        )),
       );
 }
 
@@ -122,7 +123,7 @@ class _TahunAjaranFormState extends State<_TahunAjaranForm> {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: Text(widget.ta == null ? 'Tahun Ajaran Baru' : 'Ubah Tahun Ajaran')),
-        body: Form(
+        body: LembarPutih(child: Form(
           key: _formKey,
           child: ListView(padding: const EdgeInsets.all(16), children: [
             TextFormField(
@@ -152,6 +153,6 @@ class _TahunAjaranFormState extends State<_TahunAjaranForm> {
                 child: Text('Setelah disimpan, tekan "Aktifkan" di daftar supaya tahun ajaran ini dipakai.'),
               ),
           ]),
-        ),
+        )),
       );
 }

@@ -6,6 +6,7 @@ import 'package:schoolcare/features/sekolah/data/sekolah_repository.dart';
 import 'package:schoolcare/shared/services/link_service.dart';
 import 'package:schoolcare/shared/widgets/state_views.dart';
 import 'package:schoolcare/shared/widgets/status_badge.dart';
+import 'package:schoolcare/shared/widgets/permukaan.dart';
 
 /// Laporan absensi mengajar guru per tanggal: status hadir, status kelas, foto bukti + lokasi GPS.
 /// Data diisi oleh guru lewat halaman absen mengajar.
@@ -44,7 +45,7 @@ class _LaporanGuruPageState extends State<LaporanGuruPage> {
           ]),
           actions: [IconButton(icon: const Icon(Icons.calendar_today), onPressed: _pilihTanggal)],
         ),
-        body: RefreshIndicator(
+        body: LembarPutih(child: RefreshIndicator(
           onRefresh: () async => _muatUlang(),
           child: AsyncView<List<LaporanGuru>>(
             future: _future,
@@ -73,7 +74,7 @@ class _LaporanGuruPageState extends State<LaporanGuruPage> {
               },
             ),
           ),
-        ),
+        )),
       );
 
   void _detail(LaporanGuru l) => showModalBottomSheet<void>(
@@ -121,11 +122,11 @@ class _LaporanGuruPageState extends State<LaporanGuruPage> {
             ),
             const Divider(height: 24),
             if (l.beritaAcara != null) ...[
-              const Text('Berita acara', style: TextStyle(fontWeight: FontWeight.w600)),
+              const Text('Berita acara', style: TextStyle(fontWeight: FontWeight.w700)),
               Text(l.beritaAcara!),
             ],
             if (l.keteranganTidakHadir != null) ...[
-              const Text('Keterangan tidak hadir', style: TextStyle(fontWeight: FontWeight.w600)),
+              const Text('Keterangan tidak hadir', style: TextStyle(fontWeight: FontWeight.w700)),
               Text(l.keteranganTidakHadir!),
             ],
             if (l.guruPengganti != null) Text('Guru pengganti: ${l.guruPengganti}'),

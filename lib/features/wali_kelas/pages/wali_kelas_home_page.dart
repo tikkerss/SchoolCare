@@ -1,4 +1,6 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:schoolcare/core/theme/app_colors.dart';
+import 'package:schoolcare/shared/widgets/ticket_card.dart';
 
 import '../data/absensi_repository.dart';
 import '../data/kontak_repository.dart';
@@ -18,6 +20,13 @@ class WaliKelasHomePage extends StatelessWidget {
     RaporRepository? raporRepository,
   }) : kontakRepository = kontakRepository ?? DummyKontakRepository(),
        raporRepository = raporRepository ?? DummyRaporRepository();
+
+  static const _warnaIkon = [
+    AppColors.pink,
+    AppColors.orange,
+    AppColors.softPink,
+    AppColors.softYellow,
+  ];
 
   final AbsensiRepository repository;
   final KontakRepository kontakRepository;
@@ -58,16 +67,47 @@ class WaliKelasHomePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Wali Kelas')),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
         children: [
-          for (final (ikon, judul, sub, page) in menu)
-            Card(
-              child: ListTile(
-                leading: Icon(ikon),
-                title: Text(judul),
-                subtitle: Text(sub),
-                trailing: const Icon(Icons.chevron_right),
+          for (final (i, (ikon, judul, sub, page)) in menu.indexed)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: SoftCard(
                 onTap: () => buka(page()),
+                padding: const EdgeInsets.all(14),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: _warnaIkon[i % _warnaIkon.length],
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Icon(
+                        ikon,
+                        color: i % _warnaIkon.length == 0 ? AppColors.white : AppColors.ink,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            judul,
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                          ),
+                          Text(
+                            sub,
+                            style: const TextStyle(fontSize: 12, color: AppColors.inkMuted),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right, color: AppColors.ink),
+                  ],
+                ),
               ),
             ),
         ],

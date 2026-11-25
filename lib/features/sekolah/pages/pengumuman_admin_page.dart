@@ -5,6 +5,7 @@ import 'package:schoolcare/features/sekolah/data/sekolah_repository.dart';
 import 'package:schoolcare/features/sekolah/widgets/admin_ui.dart';
 import 'package:schoolcare/shared/data/info_models.dart';
 import 'package:schoolcare/shared/widgets/state_views.dart';
+import 'package:schoolcare/shared/widgets/permukaan.dart';
 
 const _kategori = {
   'umum': 'Umum',
@@ -41,7 +42,7 @@ class _PengumumanAdminPageState extends State<PengumumanAdminPage> {
           icon: const Icon(Icons.campaign),
           label: const Text('Buat pengumuman'),
         ),
-        body: RefreshIndicator(
+        body: LembarPutih(child: RefreshIndicator(
           onRefresh: () async => _muatUlang(),
           child: AsyncView<List<Pengumuman>>(
             future: _future,
@@ -56,7 +57,7 @@ class _PengumumanAdminPageState extends State<PengumumanAdminPage> {
                 final p = list[i];
                 return Card(
                   child: ListTile(
-                    title: Text(p.judul, style: const TextStyle(fontWeight: FontWeight.w600)),
+                    title: Text(p.judul, style: const TextStyle(fontWeight: FontWeight.w700)),
                     subtitle: Text(
                       '${_kategori[p.kategori] ?? p.kategori} · ${Fmt.tanggal(p.tanggal)}\n${p.isi}',
                       maxLines: 3,
@@ -65,14 +66,14 @@ class _PengumumanAdminPageState extends State<PengumumanAdminPage> {
                     isThreeLine: true,
                     trailing: p.isPublished
                         ? null
-                        : const Text('Draf', style: TextStyle(color: AppColors.warning, fontWeight: FontWeight.w600)),
+                        : const Text('Draf', style: TextStyle(color: AppColors.warning, fontWeight: FontWeight.w700)),
                     onTap: () => _bukaForm(p),
                   ),
                 );
               },
             ),
           ),
-        ),
+        )),
       );
 }
 
@@ -139,7 +140,7 @@ class _PengumumanFormState extends State<_PengumumanForm> {
             if (widget.p != null) IconButton(icon: const Icon(Icons.delete_outline), onPressed: _hapus),
           ],
         ),
-        body: Form(
+        body: LembarPutih(child: Form(
           key: _formKey,
           child: ListView(padding: const EdgeInsets.all(16), children: [
             TextFormField(
@@ -186,6 +187,6 @@ class _PengumumanFormState extends State<_PengumumanForm> {
             const SizedBox(height: 16),
             TombolSimpan(menyimpan: _menyimpan, onPressed: _simpan),
           ]),
-        ),
+        )),
       );
 }

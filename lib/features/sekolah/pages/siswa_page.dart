@@ -7,6 +7,7 @@ import 'package:schoolcare/features/sekolah/data/sekolah_models.dart';
 import 'package:schoolcare/features/sekolah/data/sekolah_repository.dart';
 import 'package:schoolcare/features/sekolah/widgets/admin_ui.dart';
 import 'package:schoolcare/shared/widgets/state_views.dart';
+import 'package:schoolcare/shared/widgets/permukaan.dart';
 
 /// Kelola data siswa + hubungkan siswa dengan akun orang tuanya.
 class SiswaPage extends StatefulWidget {
@@ -53,7 +54,7 @@ class _SiswaPageState extends State<SiswaPage> {
           icon: const Icon(Icons.person_add_alt),
           label: const Text('Siswa baru'),
         ),
-        body: Column(children: [
+        body: LembarPutih(child: Column(children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
             child: Column(children: [
@@ -117,7 +118,7 @@ class _SiswaPageState extends State<SiswaPage> {
               ),
             ),
           ),
-        ]),
+        ])),
       );
 }
 
@@ -198,7 +199,7 @@ class _SiswaFormState extends State<_SiswaForm> {
               IconButton(icon: const Icon(Icons.delete_outline), tooltip: 'Hapus', onPressed: _hapus),
           ],
         ),
-        body: Form(
+        body: LembarPutih(child: Form(
           key: _formKey,
           child: ListView(padding: const EdgeInsets.all(16), children: [
             TextFormField(
@@ -277,7 +278,7 @@ class _SiswaFormState extends State<_SiswaForm> {
             const SizedBox(height: 24),
             TombolSimpan(menyimpan: _menyimpan, onPressed: _simpan),
           ]),
-        ),
+        )),
       );
 }
 

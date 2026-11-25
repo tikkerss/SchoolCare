@@ -54,3 +54,4 @@ android/key.properties
 *.jks
 *.keystore
 supabase/.temp/
+.claude/

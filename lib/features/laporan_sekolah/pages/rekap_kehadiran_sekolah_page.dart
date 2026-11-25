@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:schoolcare/core/theme/app_colors.dart';
 
 import '../../wali_kelas/data/models.dart';
 import '../../wali_kelas/utils/format_tanggal.dart';
@@ -6,6 +7,7 @@ import '../../wali_kelas/widgets/status_badge.dart';
 import '../data/laporan_models.dart';
 import '../data/laporan_repository.dart';
 import '../widgets/status_guru_badge.dart' show PemilihPeriode;
+import 'package:schoolcare/shared/widgets/permukaan.dart';
 
 class RekapKehadiranSekolahPage extends StatefulWidget {
   const RekapKehadiranSekolahPage({super.key, required this.repository});
@@ -76,7 +78,7 @@ class _RekapKehadiranSekolahPageState extends State<RekapKehadiranSekolahPage> {
           ),
         ],
       ),
-      body: Column(
+      body: LembarPutih(child: Column(
         children: [
           PemilihPeriode(
             label: formatBulan(_bulan),
@@ -86,7 +88,7 @@ class _RekapKehadiranSekolahPageState extends State<RekapKehadiranSekolahPage> {
           const Divider(height: 1),
           Expanded(child: _isi()),
         ],
-      ),
+      )),
     );
   }
 
@@ -153,7 +155,7 @@ class _RekapKehadiranSekolahPageState extends State<RekapKehadiranSekolahPage> {
                     if (perluPerhatian > 0)
                       Text(
                         '$perluPerhatian siswa kehadirannya di bawah 80%',
-                        style: const TextStyle(color: Color(0xFFD64545)),
+                        style: const TextStyle(color: AppColors.pink, fontWeight: FontWeight.w700),
                       ),
                     const SizedBox(height: 8),
                     RingkasanStatus(jumlah: totalSekolah),
@@ -206,7 +208,7 @@ class _DetailKelasPage extends StatelessWidget {
       ..sort((a, b) => a.persenHadir.compareTo(b.persenHadir));
     return Scaffold(
       appBar: AppBar(title: Text('Kelas ${rekap.kelas.namaKelas}')),
-      body: ListView(
+      body: LembarPutih(child: ListView(
         children: [
           Padding(
             padding: const EdgeInsets.all(16),
@@ -252,7 +254,7 @@ class _DetailKelasPage extends StatelessWidget {
             const Divider(height: 1),
           ],
         ],
-      ),
+      )),
     );
   }
 }

@@ -1,9 +1,11 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:schoolcare/core/theme/app_colors.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../wali_kelas/utils/format_tanggal.dart';
 import '../data/laporan_models.dart';
 import '../widgets/status_guru_badge.dart';
+import 'package:schoolcare/shared/widgets/permukaan.dart';
 
 class DetailAbsensiGuruPage extends StatelessWidget {
   const DetailAbsensiGuruPage({super.key, required this.item});
@@ -34,7 +36,7 @@ class DetailAbsensiGuruPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text('${a.mapel} • ${a.kelas}')),
-      body: ListView(
+      body: LembarPutih(child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Row(
@@ -54,16 +56,14 @@ class DetailAbsensiGuruPage extends StatelessWidget {
           if (a.status == StatusKehadiranGuru.tidakHadir)
             ..._bagianTidakHadir(judul),
         ],
-      ),
+      )),
     );
   }
 
   List<Widget> _bagianHadir(BuildContext context, TextStyle? judul) {
     final a = item;
     final jarak = a.jarakDariSekolah!;
-    final warnaLokasi = a.diLuarArea
-        ? const Color(0xFFD64545)
-        : const Color(0xFF2E9E5B);
+    final warnaLokasi = a.diLuarArea ? AppColors.pink : AppColors.ink;
 
     return [
       Text('Foto Bukti', style: judul),
@@ -76,11 +76,11 @@ class DetailAbsensiGuruPage extends StatelessWidget {
         child: AspectRatio(
           aspectRatio: 4 / 3,
           child: Container(
-            color: Colors.grey.shade300,
+            color: AppColors.softPink,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.photo_camera, size: 48, color: Colors.grey),
+                const Icon(Icons.photo_camera, size: 48, color: AppColors.inkMuted),
                 const SizedBox(height: 8),
                 Text('Foto dummy\n${a.fotoPath}', textAlign: TextAlign.center),
               ],
@@ -117,7 +117,7 @@ class DetailAbsensiGuruPage extends StatelessWidget {
                           : 'Di area sekolah (${_formatJarak(jarak)} dari titik sekolah)',
                       style: TextStyle(
                         color: warnaLokasi,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),

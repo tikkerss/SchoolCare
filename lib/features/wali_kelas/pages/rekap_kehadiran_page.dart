@@ -5,6 +5,7 @@ import '../data/models.dart';
 import '../utils/format_tanggal.dart';
 import '../widgets/status_badge.dart';
 import 'detail_siswa_page.dart';
+import 'package:schoolcare/shared/widgets/permukaan.dart';
 
 enum _Urutan { nama, kehadiranTerendah }
 
@@ -100,7 +101,7 @@ class _RekapKehadiranPageState extends State<RekapKehadiranPage> {
           ),
         ],
       ),
-      body: Column(
+      body: LembarPutih(child: Column(
         children: [
           _PemilihBulan(
             bulan: _bulan,
@@ -110,7 +111,7 @@ class _RekapKehadiranPageState extends State<RekapKehadiranPage> {
           const Divider(height: 1),
           Expanded(child: _buildIsi()),
         ],
-      ),
+      )),
     );
   }
 

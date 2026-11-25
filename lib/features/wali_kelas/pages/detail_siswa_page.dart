@@ -4,6 +4,7 @@ import '../data/absensi_repository.dart';
 import '../data/models.dart';
 import '../utils/format_tanggal.dart';
 import '../widgets/status_badge.dart';
+import 'package:schoolcare/shared/widgets/permukaan.dart';
 
 class DetailSiswaPage extends StatefulWidget {
   const DetailSiswaPage({
@@ -73,7 +74,7 @@ class _DetailSiswaPageState extends State<DetailSiswaPage> {
             ],
           ),
         ),
-        body: Column(
+        body: LembarPutih(child: Column(
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
@@ -111,7 +112,7 @@ class _DetailSiswaPageState extends State<DetailSiswaPage> {
                   : TabBarView(children: [_tabHarian(), _tabRiwayat()]),
             ),
           ],
-        ),
+        )),
       ),
     );
   }
@@ -147,14 +148,15 @@ class _DetailSiswaPageState extends State<DetailSiswaPage> {
         final p = _riwayat[i];
         return ListTile(
           leading: const Icon(Icons.history),
-          title: Row(
+          // Wrap (bukan Row) supaya badge tidak overflow di layar sempit.
+          title: Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 6,
+            runSpacing: 4,
             children: [
               if (p.statusLama != null) ...[
                 StatusBadge(p.statusLama!),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 6),
-                  child: Icon(Icons.arrow_forward, size: 16),
-                ),
+                const Icon(Icons.arrow_forward, size: 16),
               ],
               StatusBadge(p.statusBaru),
             ],

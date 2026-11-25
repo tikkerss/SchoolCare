@@ -1,4 +1,6 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:schoolcare/core/theme/app_colors.dart';
+import 'package:schoolcare/shared/widgets/status_badge.dart' show StatusPill;
 
 import '../data/models.dart';
 import 'status_selector.dart';
@@ -10,25 +12,7 @@ class StatusBadge extends StatelessWidget {
   final StatusAbsen status;
 
   @override
-  Widget build(BuildContext context) {
-    final warna = warnaStatus(status);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: warna.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: warna),
-      ),
-      child: Text(
-        status.label,
-        style: TextStyle(
-          color: warna,
-          fontWeight: FontWeight.w600,
-          fontSize: 12,
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => StatusPill(label: status.label, gaya: gayaStatus(status));
 }
 
 /// Deretan angka H / T / I / S / A, dipakai di rekap.
@@ -43,18 +27,16 @@ class RingkasanStatus extends StatelessWidget {
       spacing: 6,
       runSpacing: 6,
       children: StatusAbsen.values.map((s) {
-        return Chip(
-          visualDensity: VisualDensity.compact,
-          side: BorderSide(color: warnaStatus(s)),
-          label: Text('${s.label}: ${jumlah[s] ?? 0}'),
-        );
+        return StatusPill(label: '${s.label}: ${jumlah[s] ?? 0}', gaya: gayaStatus(s));
       }).toList(),
     );
   }
 }
 
+/// Warna persentase kehadiran: >= 90 pink, >= 80 orange, di bawahnya ink.
+/// (softYellow/softPink terlalu pucat untuk teks di atas putih.)
 Color warnaPersen(double p) {
-  if (p >= 90) return const Color(0xFF2E9E5B);
-  if (p >= 80) return const Color(0xFFE0A100);
-  return const Color(0xFFD64545);
+  if (p >= 90) return AppColors.pink;
+  if (p >= 80) return AppColors.orange;
+  return AppColors.ink;
 }

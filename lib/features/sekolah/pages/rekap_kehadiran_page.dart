@@ -5,6 +5,7 @@ import 'package:schoolcare/features/sekolah/data/sekolah_models.dart';
 import 'package:schoolcare/features/sekolah/data/sekolah_repository.dart';
 import 'package:schoolcare/features/sekolah/widgets/admin_ui.dart';
 import 'package:schoolcare/shared/widgets/state_views.dart';
+import 'package:schoolcare/shared/widgets/permukaan.dart';
 
 /// Rekap kehadiran siswa per kelas per bulan (hadir, terlambat, izin, sakit, alpa).
 class RekapKehadiranPage extends StatefulWidget {
@@ -56,7 +57,7 @@ class _RekapKehadiranPageState extends State<RekapKehadiranPage> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Rekap Kehadiran Siswa')),
-      body: kelas == null
+      body: LembarPutih(child: kelas == null
           ? const LoadingView()
           : kelas.isEmpty
               ? const EmptyState(message: 'Belum ada kelas di tahun ajaran aktif.')
@@ -93,7 +94,7 @@ class _RekapKehadiranPageState extends State<RekapKehadiranPage> {
                           scrollDirection: Axis.horizontal,
                           child: DataTable(
                             columnSpacing: 20,
-                            headingRowColor: WidgetStatePropertyAll(AppColors.primary.withValues(alpha: 0.08)),
+                            headingRowColor: const WidgetStatePropertyAll(AppColors.softPink),
                             columns: const [
                               DataColumn(label: Text('Nama')),
                               DataColumn(label: Text('Hadir'), numeric: true),
@@ -119,7 +120,7 @@ class _RekapKehadiranPageState extends State<RekapKehadiranPage> {
                       ),
                     ),
                   ),
-                ]),
+                ])),
     );
   }
 }

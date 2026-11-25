@@ -5,6 +5,7 @@ import '../data/rapor_models.dart';
 import '../data/rapor_repository.dart';
 import '../widgets/status_rapor_badge.dart';
 import 'rapor_detail_page.dart';
+import 'package:schoolcare/shared/widgets/permukaan.dart';
 
 class RaporListPage extends StatefulWidget {
   const RaporListPage({super.key, required this.repository});
@@ -74,7 +75,7 @@ class _RaporListPageState extends State<RaporListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Rapor')),
-      body: _buildBody(),
+      body: LembarPutih(child: _buildBody()),
     );
   }
 

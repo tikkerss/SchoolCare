@@ -4,6 +4,7 @@ import 'package:schoolcare/features/auth/data/profile.dart';
 import 'package:schoolcare/features/sekolah/data/sekolah_repository.dart';
 import 'package:schoolcare/features/sekolah/widgets/admin_ui.dart';
 import 'package:schoolcare/shared/widgets/state_views.dart';
+import 'package:schoolcare/shared/widgets/permukaan.dart';
 
 /// Kelola akun guru, orang tua, dan pihak sekolah:
 /// buat akun baru (lewat Edge Function), ubah data, aktifkan/nonaktifkan.
@@ -49,7 +50,7 @@ class _AkunPageState extends State<AkunPage> {
           icon: const Icon(Icons.person_add),
           label: const Text('Akun baru'),
         ),
-        body: Column(children: [
+        body: LembarPutih(child: Column(children: [
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -97,7 +98,7 @@ class _AkunPageState extends State<AkunPage> {
               ),
             ),
           ),
-        ]),
+        ])),
       );
 }
 
@@ -156,7 +157,7 @@ class _AkunFormPageState extends State<_AkunFormPage> {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: Text(_baru ? 'Akun Baru' : 'Ubah Akun')),
-        body: Form(
+        body: LembarPutih(child: Form(
           key: _formKey,
           child: ListView(padding: const EdgeInsets.all(16), children: [
             DropdownButtonFormField<UserRole>(
@@ -212,6 +213,6 @@ class _AkunFormPageState extends State<_AkunFormPage> {
             const SizedBox(height: 24),
             TombolSimpan(menyimpan: _menyimpan, onPressed: _simpan, label: _baru ? 'Buat akun' : 'Simpan'),
           ]),
-        ),
+        )),
       );
 }

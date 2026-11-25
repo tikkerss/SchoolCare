@@ -1,5 +1,6 @@
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:schoolcare/core/theme/app_colors.dart';
 import 'package:schoolcare/features/auth/pages/profil_page.dart';
 import 'package:schoolcare/features/orang_tua/data/ortu_models.dart';
 import 'package:schoolcare/features/orang_tua/data/ortu_repository.dart';
@@ -7,6 +8,7 @@ import 'package:schoolcare/features/orang_tua/widgets/akademik_tab.dart';
 import 'package:schoolcare/features/orang_tua/widgets/beranda_tab.dart';
 import 'package:schoolcare/features/orang_tua/widgets/kehadiran_tab.dart';
 import 'package:schoolcare/features/orang_tua/widgets/ortu_ui.dart';
+import 'package:schoolcare/shared/widgets/app_bottom_nav.dart';
 
 /// Kerangka tampilan Orang Tua (route '/ortu'):
 /// AppBar berisi nama anak (bisa diganti kalau anak > 1) + navigasi bawah 4 tab.
@@ -74,7 +76,9 @@ class _OrtuShellPageState extends State<OrtuShellPage> {
           : BerandaTab(
               key: ValueKey('beranda-${anak.siswaId}'),
               anak: anak,
+              pemilihAnak: _pemilihAnak(anak),
               onLihatKehadiran: () => setState(() => _index = 1),
+              onLihatAkademik: () => setState(() => _index = 2),
             ),
       anak == null ? status : KehadiranTab(key: ValueKey('hadir-${anak.siswaId}'), anak: anak),
       anak == null ? status : AkademikTab(key: ValueKey('akademik-${anak.siswaId}'), anak: anak),
@@ -82,26 +86,46 @@ class _OrtuShellPageState extends State<OrtuShellPage> {
     ];
 
     return Scaffold(
-      appBar: AppBar(title: anak == null ? const Text('SchoolCare') : _judul(anak)),
-      body: IndexedStack(index: _index, children: tabs),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: (i) => setState(() => _index = i),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Beranda'),
-          NavigationDestination(
-            icon: Icon(Icons.fact_check_outlined),
-            selectedIcon: Icon(Icons.fact_check),
-            label: 'Kehadiran',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.menu_book_outlined),
-            selectedIcon: Icon(Icons.menu_book),
-            label: 'Akademik',
-          ),
-          NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Profil'),
+      // Beranda punya judul sendiri ("Hari ini, <anak> di sekolah"), jadi tanpa AppBar.
+      appBar: _index == 0 && anak != null
+          ? null
+          : AppBar(title: anak == null ? const Text('SchoolCare') : _judul(anak)),
+      body: SafeArea(bottom: false, child: IndexedStack(index: _index, children: tabs)),
+      bottomNavigationBar: AppBottomNav(
+        index: _index,
+        onTap: (i) => setState(() => _index = i),
+        items: const [
+          AppBottomNavItem(ikon: Icons.home_rounded, label: 'Beranda'),
+          AppBottomNavItem(ikon: Icons.fact_check_outlined, label: 'Kehadiran'),
+          AppBottomNavItem(ikon: Icons.menu_book_outlined, label: 'Akademik'),
+          AppBottomNavItem(ikon: Icons.person_outline, label: 'Profil'),
         ],
       ),
+    );
+  }
+
+  /// Chip kecil "Kelas 7A ▾" di Beranda. Kalau anak lebih dari satu, bisa diketuk untuk ganti anak.
+  Widget _pemilihAnak(Anak a) {
+    final list = _daftarAnak ?? const <Anak>[];
+    final chip = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(color: AppColors.softPink, borderRadius: BorderRadius.circular(8)),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Text(
+          list.length < 2 ? 'Kelas ${a.namaKelas}' : '${a.nama} · ${a.namaKelas}',
+          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.ink),
+        ),
+        if (list.length >= 2) const Icon(Icons.arrow_drop_down, size: 18, color: AppColors.ink),
+      ]),
+    );
+    if (list.length < 2) return chip;
+    return PopupMenuButton<Anak>(
+      tooltip: 'Ganti anak',
+      onSelected: (x) => setState(() => _dipilih = x),
+      itemBuilder: (_) => [
+        for (final x in list) PopupMenuItem(value: x, child: Text('${x.nama} (Kelas ${x.namaKelas})')),
+      ],
+      child: chip,
     );
   }
 
@@ -112,7 +136,7 @@ class _OrtuShellPageState extends State<OrtuShellPage> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(a.nama),
-        Text('Kelas ${a.namaKelas}', style: Theme.of(context).textTheme.bodySmall),
+        Text('Kelas ${a.namaKelas}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: AppColors.white)),
       ],
     );
     final list = _daftarAnak ?? const <Anak>[];
