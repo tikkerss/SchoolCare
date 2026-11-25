@@ -56,7 +56,8 @@ class _AbsensiHadirPageState extends State<AbsensiHadirPage> {
   @override
   Widget build(BuildContext context) {
     // Saat mengubah, foto lama tetap dipakai kalau tidak diambil ulang.
-    final bisaSimpan = (_bukti != null || _ubah) && _beritaAcara.text.trim().isNotEmpty && !_menyimpan;
+    // Berita acara boleh kosong dulu: bisa dilengkapi di akhir pelajaran lewat "Isi Berita Acara".
+    final bisaSimpan = (_bukti != null || _ubah) && !_menyimpan;
 
     return Scaffold(
       appBar: AppBar(title: Text('${_ubah ? 'Ubah: ' : ''}Hadir • Kelas ${widget.jadwal.namaKelas}')),
@@ -67,7 +68,7 @@ class _AbsensiHadirPageState extends State<AbsensiHadirPage> {
             _Langkah(_ubah ? '1. Foto kegiatan kelas (ambil ulang bila perlu)' : '1. Foto kegiatan kelas (wajib)'),
             BuktiFotoPicker(bukti: _bukti, onBerubah: (b) => setState(() => _bukti = b)),
             const SizedBox(height: 24),
-            const _Langkah('2. Berita acara'),
+            const _Langkah('2. Berita acara (boleh diisi nanti di akhir pelajaran)'),
             TextField(
               controller: _beritaAcara,
               maxLines: 5,

@@ -14,7 +14,7 @@ class Jadwal {
   // ---- data absensi (semua null kalau belum diabsen) ----
   final String? absensiId;
   final String? statusKehadiran; // 'hadir' | 'tidak_hadir'
-  final String? beritaAcara, keterangan, suratPath;
+  final String? beritaAcara, keterangan, suratPath, fotoPath;
   final String? guruPenggantiId, guruPengganti;
   final DateTime? dibuatPada, diubahPada;
 
@@ -36,6 +36,7 @@ class Jadwal {
     this.beritaAcara,
     this.keterangan,
     this.suratPath,
+    this.fotoPath,
     this.guruPenggantiId,
     this.guruPengganti,
     this.dibuatPada,
@@ -60,6 +61,7 @@ class Jadwal {
         beritaAcara: a?['berita_acara'] as String?,
         keterangan: a?['keterangan_tidak_hadir'] as String?,
         suratPath: a?['surat_url'] as String?,
+        fotoPath: a?['foto_url'] as String?,
         guruPenggantiId: a?['guru_pengganti_id'] as String?,
         guruPengganti: a?['pengganti']?['nama_lengkap'] as String?,
         dibuatPada: _waktu(a?['created_at'] ?? a?['foto_diambil_pada']),

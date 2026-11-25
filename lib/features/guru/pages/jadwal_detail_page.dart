@@ -5,6 +5,8 @@ import 'package:schoolcare/features/guru/data/siswa_repository.dart';
 import 'package:schoolcare/features/guru/models/jadwal.dart';
 import 'package:schoolcare/features/guru/models/siswa_kelas.dart';
 import 'package:schoolcare/features/guru/pages/absensi_mengajar_page.dart';
+import 'package:schoolcare/features/guru/pages/ganti_foto_page.dart';
+import 'package:schoolcare/features/guru/pages/ubah_berita_acara_page.dart';
 import 'package:schoolcare/features/guru/widgets/catatan_siswa_sheet.dart';
 import 'package:schoolcare/shared/widgets/section_header.dart';
 import 'package:schoolcare/shared/widgets/state_views.dart';
@@ -28,13 +30,16 @@ class _JadwalDetailPageState extends State<JadwalDetailPage> {
   late Jadwal _jadwal = widget.jadwal;
   late Future<DaftarSiswa> _siswa = _siswaRepo.getSiswaHariIni(_jadwal.kelasId);
 
-  void _muatUlangSiswa() => setState(() => _siswa = _siswaRepo.getSiswaHariIni(_jadwal.kelasId));
+  void _muatUlangSiswa() => setState(() {
+        _siswa = _siswaRepo.getSiswaHariIni(_jadwal.kelasId);
+      });
 
-  Future<void> _absen() async {
-    final tersimpan = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(builder: (_) => AbsensiMengajarPage(jadwal: _jadwal)),
-    );
+  /// Absen pertama kali (pilih Hadir / Tidak Hadir).
+  Future<void> _absen() => _buka(AbsensiMengajarPage(jadwal: _jadwal));
+
+  /// Membuka halaman ubah, lalu memuat ulang data absensi kalau ada yang tersimpan.
+  Future<void> _buka(Widget halaman) async {
+    final tersimpan = await Navigator.push<bool>(context, MaterialPageRoute(builder: (_) => halaman));
     if (tersimpan != true) return;
     try {
       final semua = await _guruRepo.getJadwalHariIni();
@@ -147,10 +152,15 @@ class _JadwalDetailPageState extends State<JadwalDetailPage> {
       ],
     ),
     if (j.infoWaktu.isNotEmpty) Text(j.infoWaktu, style: theme.textTheme.bodySmall?.copyWith(fontSize: 11)),
-    if (j.beritaAcara != null) ...[
+    if (j.hadir) ...[
       const SizedBox(height: 12),
       const _Label('Berita acara'),
-      Text(j.beritaAcara!, style: const TextStyle(fontSize: 13)),
+      j.beritaAcara == null
+          ? const Text(
+              'Belum diisi. Lengkapi di akhir pelajaran.',
+              style: TextStyle(fontSize: 13, color: AppColors.warning, fontWeight: FontWeight.w600),
+            )
+          : Text(j.beritaAcara!, style: const TextStyle(fontSize: 13)),
     ],
     if (j.keterangan != null) ...[
       const SizedBox(height: 12),
@@ -162,7 +172,21 @@ class _JadwalDetailPageState extends State<JadwalDetailPage> {
       Text('Guru pengganti: ${j.guruPengganti}', style: const TextStyle(fontSize: 13)),
     ],
     const SizedBox(height: 14),
-    OutlinedButton.icon(icon: const Icon(Icons.edit_outlined), label: const Text('Ubah Absensi'), onPressed: _absen),
+    // Setelah absen, status kehadiran tidak bisa diubah lagi.
+    // Yang masih bisa: berita acara (untuk Hadir, mis. dilengkapi di akhir pelajaran) dan foto bukti.
+    if (j.hadir) ...[
+      FilledButton.icon(
+        icon: const Icon(Icons.edit_note),
+        label: Text(j.beritaAcara == null ? 'Isi Berita Acara' : 'Ubah Berita Acara'),
+        onPressed: () => _buka(UbahBeritaAcaraPage(jadwal: j)),
+      ),
+      const SizedBox(height: 8),
+    ],
+    OutlinedButton.icon(
+      icon: const Icon(Icons.photo_camera_outlined),
+      label: const Text('Ganti Foto Bukti'),
+      onPressed: () => _buka(GantiFotoPage(jadwal: j)),
+    ),
   ];
 }
 

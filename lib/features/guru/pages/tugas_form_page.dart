@@ -96,7 +96,9 @@ class _TugasFormPageState extends State<TugasFormPage> {
       body: LembarPutih(
         child: AsyncView<List<KelasMapel>>(
           future: _pilihan,
-          onRetry: () => setState(() => _pilihan = _muatPilihan()),
+          onRetry: () => setState(() {
+            _pilihan = _muatPilihan();
+          }),
           isEmpty: (list) => list.isEmpty,
           emptyMessage: 'Anda belum punya jadwal mengajar di semester ini, jadi belum bisa membuat tugas.',
           builder: (context, pilihan) {

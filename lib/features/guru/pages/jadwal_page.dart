@@ -25,7 +25,9 @@ class _JadwalPageState extends State<JadwalPage> {
   final _repo = GuruRepository();
   late Future<List<Jadwal>> _future = _repo.getJadwalHariIni();
 
-  void _muatUlang() => setState(() => _future = _repo.getJadwalHariIni());
+  void _muatUlang() => setState(() {
+        _future = _repo.getJadwalHariIni();
+      });
 
   /// Membuka detail jam pelajaran (absensi + daftar siswa). Jadwal dimuat ulang sesudahnya.
   Future<void> _buka(Jadwal j) async {
@@ -222,6 +224,11 @@ class _JadwalCard extends StatelessWidget {
             style: const TextStyle(fontSize: 12, color: AppColors.inkMuted),
           ),
           if (jadwal.guruPengganti != null) Text('Pengganti: ${jadwal.guruPengganti}', style: kecil),
+          if (jadwal.hadir && jadwal.beritaAcara == null)
+            const Text(
+              'Berita acara belum diisi',
+              style: TextStyle(fontSize: 12, color: AppColors.warning, fontWeight: FontWeight.w600),
+            ),
           if (jadwal.pernahDiubah) Text('Diubah ${Fmt.waktu(jadwal.diubahPada!)}', style: kecil),
           if (berjalan && !jadwal.sudahDiabsen) ...[
             const SizedBox(height: 10),

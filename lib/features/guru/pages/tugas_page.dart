@@ -22,7 +22,9 @@ class _TugasPageState extends State<TugasPage> {
   final _repo = TugasRepository();
   late Future<List<TugasGuru>> _future = _repo.getTugasSaya();
 
-  void _muatUlang() => setState(() => _future = _repo.getTugasSaya());
+  void _muatUlang() => setState(() {
+        _future = _repo.getTugasSaya();
+      });
 
   Future<void> _buka(Widget halaman) async {
     await Navigator.push<void>(context, MaterialPageRoute(builder: (_) => halaman));

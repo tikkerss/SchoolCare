@@ -157,7 +157,9 @@ class _AbsensiTidakHadirPageState extends State<AbsensiTidakHadirPage> {
                 builder: (context, snap) {
                   if (snap.hasError) {
                     return TextButton(
-                      onPressed: () => setState(() => _daftarGuru = _repo.getGuruPengganti(widget.jadwal)),
+                      onPressed: () => setState(() {
+                        _daftarGuru = _repo.getGuruPengganti(widget.jadwal);
+                      }),
                       child: const Text('Gagal memuat daftar guru. Coba lagi'),
                     );
                   }

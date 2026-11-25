@@ -111,7 +111,8 @@ class GuruRepository {
     await _simpan(jadwal, bukti, {
       'status_kehadiran': 'hadir',
       'status_kelas': 'berlangsung',
-      'berita_acara': beritaAcara,
+      // boleh kosong dulu, diisi di akhir pelajaran lewat ubahBeritaAcara()
+      'berita_acara': beritaAcara.trim().isEmpty ? null : beritaAcara.trim(),
       'keterangan_tidak_hadir': null,
       'surat_url': null,
       'guru_pengganti_id': null,
@@ -173,19 +174,44 @@ class GuruRepository {
         rethrow;
       }
     } else {
-      final hasil = await supabase
-          .from('absensi_guru')
-          .update({
-            ...baris,
-            // Kalau tabel punya kolom updated_at, isi dengan waktu sekarang
-            // (kalau Backend memasang trigger, nilainya ditimpa trigger, hasilnya sama).
-            if (jadwal.adaKolomUpdatedAt) 'updated_at': DateTime.now().toUtc().toIso8601String(),
-          })
-          .eq('id', jadwal.absensiId!)
-          .select('id');
-      // RLS yang menolak update tidak memunculkan error, hanya 0 baris berubah.
-      if (hasil.isEmpty) throw Exception('Tidak punya izin mengubah absensi ini. Hubungi Backend (RLS update).');
+      await _ubahSebagian(jadwal, baris);
     }
+  }
+
+  // ------------------------------------------------------------------ ubah sebagian
+
+  /// Mengubah berita acara saja (mis. diisi/dilengkapi di akhir pelajaran).
+  Future<void> ubahBeritaAcara(Jadwal jadwal, String beritaAcara) => _ubahSebagian(jadwal, {
+        'berita_acara': beritaAcara.trim().isEmpty ? null : beritaAcara.trim(),
+      });
+
+  /// Mengganti foto bukti saja (beserta lokasi & waktunya). Data lain tidak berubah.
+  Future<void> gantiFoto(Jadwal jadwal, BuktiFoto bukti) async => _ubahSebagian(jadwal, {
+        'foto_url': await _uploadFoto(jadwal, bukti),
+        'latitude': bukti.latitude,
+        'longitude': bukti.longitude,
+        'akurasi_meter': bukti.akurasiMeter,
+        'foto_diambil_pada': bukti.waktu.toUtc().toIso8601String(),
+      });
+
+  /// Link sementara (1 jam) untuk menampilkan foto bukti dari bucket privat.
+  Future<String> urlFoto(String path) =>
+      supabase.storage.from('bukti-absensi-guru').createSignedUrl(path, 3600);
+
+  Future<void> _ubahSebagian(Jadwal jadwal, Map<String, dynamic> isi) async {
+    final id = jadwal.absensiId;
+    if (id == null) throw Exception('Jam pelajaran ini belum diabsen.');
+    final hasil = await supabase
+        .from('absensi_guru')
+        .update({
+          ...isi,
+          // tabel punya kolom updated_at → isi waktu sekarang (kalau ada trigger, hasilnya sama)
+          if (jadwal.adaKolomUpdatedAt) 'updated_at': DateTime.now().toUtc().toIso8601String(),
+        })
+        .eq('id', id)
+        .select('id');
+    // RLS yang menolak update tidak memunculkan error, hanya 0 baris berubah.
+    if (hasil.isEmpty) throw Exception('Tidak punya izin mengubah absensi ini. Hubungi Backend (RLS update).');
   }
 
   Future<String> _uploadFoto(Jadwal jadwal, BuktiFoto bukti) async {
