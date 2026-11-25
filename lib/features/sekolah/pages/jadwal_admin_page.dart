@@ -7,6 +7,7 @@ import 'package:schoolcare/features/sekolah/data/sekolah_models.dart';
 import 'package:schoolcare/features/sekolah/data/sekolah_repository.dart';
 import 'package:schoolcare/features/sekolah/widgets/admin_ui.dart';
 import 'package:schoolcare/shared/widgets/state_views.dart';
+import 'package:schoolcare/shared/widgets/permukaan.dart';
 
 /// Susun jadwal pelajaran per kelas untuk semester aktif.
 /// Data ini dipakai halaman Guru (jadwal mengajar) dan Orang Tua (jadwal & aktivitas harian).
@@ -119,7 +120,7 @@ class _JadwalAdminPageState extends State<JadwalAdminPage> {
               icon: const Icon(Icons.add),
               label: const Text('Tambah jadwal'),
             ),
-      body: body,
+      body: LembarPutih(child: body),
     );
   }
 
@@ -129,7 +130,7 @@ class _JadwalAdminPageState extends State<JadwalAdminPage> {
           child: Row(children: [
             Expanded(
               child: Text(hurufBesarAwal(hari),
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
             ),
             TextButton.icon(
               onPressed: () => _bukaForm(hari: hari),
@@ -223,7 +224,7 @@ class _JadwalFormState extends State<_JadwalForm> {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: Text(widget.jadwal == null ? 'Jadwal Baru' : 'Ubah Jadwal')),
-        body: FutureBuilder<(List<MataPelajaran>, List<Profile>)>(
+        body: LembarPutih(child: FutureBuilder<(List<MataPelajaran>, List<Profile>)>(
           future: _pilihan,
           builder: (context, snap) {
             if (snap.hasError) return ErrorView(message: AdminUi.pesanError(snap.error!));
@@ -290,6 +291,6 @@ class _JadwalFormState extends State<_JadwalForm> {
               ]),
             );
           },
-        ),
+        )),
       );
 }

@@ -1,9 +1,11 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:schoolcare/core/theme/app_colors.dart';
 
 import '../data/absensi_repository.dart';
 import '../data/models.dart';
 import '../utils/format_tanggal.dart';
 import '../widgets/status_selector.dart';
+import 'package:schoolcare/shared/widgets/permukaan.dart';
 
 class AbsensiPagiPage extends StatefulWidget {
   const AbsensiPagiPage({super.key, required this.repository});
@@ -100,10 +102,10 @@ class _AbsensiPagiPageState extends State<AbsensiPagiPage> {
             ),
         ],
       ),
-      body: _buildBody(hariMinggu),
+      body: LembarPutih(child: _buildBody(hariMinggu)),
       bottomNavigationBar: _loading || _error != null || hariMinggu
           ? null
-          : SafeArea(
+          : BilahBawahPutih(
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: FilledButton.icon(
@@ -155,20 +157,45 @@ class _AbsensiPagiPageState extends State<AbsensiPagiPage> {
             separatorBuilder: (_, _) => const Divider(height: 1),
             itemBuilder: (context, i) {
               final b = _baris[i];
-              return ListTile(
-                leading: CircleAvatar(child: Text('${i + 1}')),
-                title: Text(b.siswa.nama),
-                subtitle: Text(
-                  b.dariPengajuanIzin
-                      ? 'Izin dari orang tua • ${b.keterangan ?? ''}'
-                      : 'NIS ${b.siswa.nis}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                trailing: StatusSelector(
-                  value: b.status,
-                  enabled: !b.dariPengajuanIzin,
-                  onChanged: (s) => setState(() => b.status = s),
+              // Pemilih status (5 tombol, ±190 px) ditaruh di bawah nama, bukan di
+              // trailing ListTile, supaya tidak overflow di layar sempit.
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CircleAvatar(child: Text('${i + 1}')),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            b.siswa.nama,
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                          ),
+                          Text(
+                            b.dariPengajuanIzin
+                                ? 'Izin dari orang tua • ${b.keterangan ?? ''}'
+                                : 'NIS ${b.siswa.nis}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 12, color: AppColors.inkMuted),
+                          ),
+                          const SizedBox(height: 8),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: StatusSelector(
+                              value: b.status,
+                              enabled: !b.dariPengajuanIzin,
+                              onChanged: (s) => setState(() => b.status = s),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               );
             },

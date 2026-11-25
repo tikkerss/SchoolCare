@@ -1,8 +1,10 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:schoolcare/core/theme/app_colors.dart';
 
 import '../data/kontak_repository.dart';
 import '../data/models.dart';
 import '../utils/whatsapp.dart';
+import 'package:schoolcare/shared/widgets/permukaan.dart';
 
 class KontakOrangTuaPage extends StatefulWidget {
   const KontakOrangTuaPage({super.key, required this.repository});
@@ -84,7 +86,7 @@ class _KontakOrangTuaPageState extends State<KontakOrangTuaPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Kontak Orang Tua')),
-      body: _buildBody(),
+      body: LembarPutih(child: _buildBody()),
     );
   }
 
@@ -144,7 +146,7 @@ class _KontakOrangTuaPageState extends State<KontakOrangTuaPage> {
           ListTile(
             title: Text(
               k.siswa.nama,
-              style: const TextStyle(fontWeight: FontWeight.w600),
+              style: const TextStyle(fontWeight: FontWeight.w700),
             ),
             subtitle: Text('NIS ${k.siswa.nis}'),
           ),
@@ -153,7 +155,7 @@ class _KontakOrangTuaPageState extends State<KontakOrangTuaPage> {
               padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
               child: Text(
                 'Belum ada akun orang tua yang terhubung. Hubungi Pihak Sekolah.',
-                style: TextStyle(color: Colors.grey),
+                style: TextStyle(color: AppColors.inkMuted),
               ),
             )
           else
@@ -173,7 +175,7 @@ class _KontakOrangTuaPageState extends State<KontakOrangTuaPage> {
                     ),
                     IconButton(
                       tooltip: 'Chat WhatsApp',
-                      icon: const Icon(Icons.chat, color: Color(0xFF25D366)),
+                      icon: const Icon(Icons.chat, color: AppColors.pink),
                       onPressed: () => _chat(k, o),
                     ),
                   ],

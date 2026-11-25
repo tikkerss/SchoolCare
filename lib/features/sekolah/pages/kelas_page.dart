@@ -4,6 +4,7 @@ import 'package:schoolcare/features/sekolah/data/sekolah_models.dart';
 import 'package:schoolcare/features/sekolah/data/sekolah_repository.dart';
 import 'package:schoolcare/features/sekolah/widgets/admin_ui.dart';
 import 'package:schoolcare/shared/widgets/state_views.dart';
+import 'package:schoolcare/shared/widgets/permukaan.dart';
 
 /// Kelola kelas per tahun ajaran + penetapan wali kelas.
 class KelasPage extends StatefulWidget {
@@ -70,7 +71,7 @@ class _KelasPageState extends State<KelasPage> {
               icon: const Icon(Icons.add),
               label: const Text('Kelas baru'),
             ),
-      body: daftarTa == null
+      body: LembarPutih(child: daftarTa == null
           ? const LoadingView()
           : daftarTa.isEmpty
               ? const EmptyState(message: 'Buat tahun ajaran dulu di menu Tahun Ajaran.')
@@ -116,7 +117,7 @@ class _KelasPageState extends State<KelasPage> {
                       ),
                     ),
                   ),
-                ]),
+                ])),
     );
   }
 }
@@ -172,7 +173,7 @@ class _KelasFormState extends State<_KelasForm> {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: Text(widget.kelas == null ? 'Kelas Baru' : 'Ubah Kelas')),
-        body: Form(
+        body: LembarPutih(child: Form(
           key: _formKey,
           child: ListView(padding: const EdgeInsets.all(16), children: [
             TextFormField(
@@ -216,6 +217,6 @@ class _KelasFormState extends State<_KelasForm> {
             const SizedBox(height: 24),
             TombolSimpan(menyimpan: _menyimpan, onPressed: _simpan),
           ]),
-        ),
+        )),
       );
 }

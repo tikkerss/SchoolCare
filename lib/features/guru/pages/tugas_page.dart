@@ -7,6 +7,8 @@ import 'package:schoolcare/features/guru/pages/tugas_detail_page.dart';
 import 'package:schoolcare/features/guru/pages/tugas_form_page.dart';
 import 'package:schoolcare/shared/widgets/section_header.dart';
 import 'package:schoolcare/shared/widgets/state_views.dart';
+import 'package:schoolcare/shared/widgets/status_badge.dart';
+import 'package:schoolcare/shared/widgets/ticket_card.dart';
 
 /// Tab Tugas: daftar tugas buatan guru + tombol tambah.
 class TugasPage extends StatefulWidget {
@@ -51,15 +53,23 @@ class _TugasPageState extends State<TugasPage> {
             final aktif = list.where((t) => !t.lewat).toList()..sort((a, b) => a.tenggat.compareTo(b.tenggat));
             final lewat = list.where((t) => t.lewat).toList();
             return ListView(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 96),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 96),
               children: [
                 if (aktif.isNotEmpty) ...[
                   const SectionHeader('Belum lewat deadline'),
-                  for (final t in aktif) _TugasCard(tugas: t, onTap: () => _buka(TugasDetailPage(tugas: t))),
+                  for (final t in aktif)
+                    _TugasCard(
+                      tugas: t,
+                      onTap: () => _buka(TugasDetailPage(tugas: t)),
+                    ),
                 ],
                 if (lewat.isNotEmpty) ...[
                   const SectionHeader('Sudah lewat deadline'),
-                  for (final t in lewat) _TugasCard(tugas: t, onTap: () => _buka(TugasDetailPage(tugas: t))),
+                  for (final t in lewat)
+                    _TugasCard(
+                      tugas: t,
+                      onTap: () => _buka(TugasDetailPage(tugas: t)),
+                    ),
                 ],
               ],
             );
@@ -78,41 +88,49 @@ class _TugasCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final semuaDinilai = tugas.jumlahSiswa > 0 && tugas.dinilai >= tugas.jumlahSiswa;
+    const kecil = TextStyle(fontSize: 11, color: AppColors.inkMuted);
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: SoftCard(
         onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(tugas.judul, style: theme.textTheme.titleMedium),
-              const SizedBox(height: 4),
-              Text('${tugas.mapel} • Kelas ${tugas.namaKelas}', style: theme.textTheme.bodySmall),
-              const SizedBox(height: 8),
-              Row(children: [
-                Icon(Icons.event_outlined, size: 16, color: tugas.lewat ? AppColors.danger : AppColors.textSecondary),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    tugas.judul,
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.ink),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                StatusPill(label: tugas.mapel, gaya: GayaChip.softPink),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Text('Kelas ${tugas.namaKelas}', style: const TextStyle(fontSize: 12, color: AppColors.inkMuted)),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Icon(Icons.event_outlined, size: 16, color: tugas.lewat ? AppColors.pink : AppColors.inkMuted),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
                     'Deadline ${Fmt.waktu(tugas.tenggat)}',
-                    style: theme.textTheme.bodySmall?.copyWith(color: tugas.lewat ? AppColors.danger : null),
+                    style: kecil.copyWith(color: tugas.lewat ? AppColors.pink : null),
                   ),
                 ),
-                Text(
-                  'Dinilai ${tugas.dinilai}/${tugas.jumlahSiswa}',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: semuaDinilai ? AppColors.success : AppColors.textSecondary,
-                    fontWeight: FontWeight.w600,
-                  ),
+                StatusPill(
+                  label: 'Dinilai ${tugas.dinilai}/${tugas.jumlahSiswa}',
+                  gaya: semuaDinilai ? GayaChip.pink : GayaChip.softYellow,
                 ),
-              ]),
-            ],
-          ),
+              ],
+            ),
+          ],
         ),
       ),
     );

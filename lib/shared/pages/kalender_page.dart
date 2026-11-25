@@ -4,6 +4,7 @@ import 'package:schoolcare/shared/data/info_models.dart';
 import 'package:schoolcare/shared/data/info_repository.dart';
 import 'package:schoolcare/shared/widgets/state_views.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:schoolcare/shared/widgets/permukaan.dart';
 
 /// Kalender sekolah (semua peran). Tanggal yang punya agenda diberi titik penanda.
 class KalenderPage extends StatefulWidget {
@@ -57,7 +58,7 @@ class _KalenderPageState extends State<KalenderPage> {
     final hariIni = _padaHari(_selected);
     return Scaffold(
       appBar: AppBar(title: const Text('Kalender Sekolah')),
-      body: Column(children: [
+      body: LembarPutih(child: Column(children: [
         TableCalendar<Agenda>(
           locale: 'id_ID',
           firstDay: DateTime(2025),
@@ -104,7 +105,7 @@ class _KalenderPageState extends State<KalenderPage> {
                         ),
                     ]),
         ),
-      ]),
+      ])),
     );
   }
 

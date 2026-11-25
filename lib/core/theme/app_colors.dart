@@ -1,21 +1,73 @@
 import 'package:material_ui/material_ui.dart';
 
-/// Token warna SchoolCare.
-/// TODO(designer): samakan nilai-nilai ini dengan design system di Figma.
+/// Token warna SchoolCare (desain "Gaya Stiker", FINAL).
+/// Hanya warna di bawah ini yang boleh dipakai. Nama token lama tetap ada
+/// supaya kode fitur lain tetap jalan, tapi nilainya sudah diarahkan ke palet baru.
 class AppColors {
   AppColors._();
 
-  static const primary = Color(0xFF2563EB);
-  static const background = Color(0xFFF6F7FB);
-  static const surface = Colors.white;
-  static const textPrimary = Color(0xFF111827);
-  static const textSecondary = Color(0xFF6B7280);
-  static const border = Color(0xFFE5E7EB);
+  // ---------------------------------------------------------------- palet
+  static const pink = Color(0xFFD63F75);
+  static const softPink = Color(0xFFFFD1DF);
+  static const orange = Color(0xFFE07400);
+  static const softYellow = Color(0xFFFFE9A6);
+  static const white = Color(0xFFFFFFFF);
+  static const ink = Color(0xFF3A1426);
+  static const inkMuted = Color(0xFF6E3A52);
+  static const inkFaint = Color(0xFF8A5A6E);
+
+  /// Teks di atas kotak softPink & softYellow.
+  static const black = Color(0xFF000000);
+
+  // ------------------------------------------------- token lama (alias)
+  static const primary = pink;
+  static const background = pink;
+  static const surface = white;
+  static const textPrimary = ink;
+  static const textSecondary = inkMuted;
+  static const border = softPink;
 
   // Warna status
-  static const success = Color(0xFF16A34A);
-  static const warning = Color(0xFFF59E0B);
-  static const danger = Color(0xFFDC2626);
-  static const info = Color(0xFF0EA5E9);
-  static const purple = Color(0xFF9333EA);
+  static const success = pink;
+  static const warning = orange;
+  static const danger = pink;
+  static const info = softYellow;
+  static const purple = softPink;
+
+  // ------------------------------------------------- warna teks per latar
+  /// true untuk latar muda (softPink / softYellow): teksnya hitam bold.
+  static bool latarMuda(Color latar) => latar == softPink || latar == softYellow;
+
+  /// Warna teks/ikon yang sesuai di atas [latar]:
+  /// pink & orange → putih, softPink & softYellow → hitam, lainnya (frame putih) → ink.
+  static Color teksDi(Color latar) {
+    if (latar == pink || latar == orange) return white;
+    if (latarMuda(latar)) return black;
+    return ink;
+  }
+
+  // ------------------------------------------------ transparan (hiasan/efek)
+  /// Lingkaran hiasan latar: softPink 16% dan softYellow 14%.
+  static const hiasSoftPink = Color(0x29FFD1DF);
+  static const hiasSoftYellow = Color(0x24FFE9A6);
+
+  /// Kilau tombol glossy (putih 38%) dan bayangan dalam (hitam 16%).
+  static const kilau = Color(0x61FFFFFF);
+  static const bayanganDalam = Color(0x29000000);
+
+  /// Garis miring progress bar (putih 28%).
+  static const garisProgress = Color(0x47FFFFFF);
+
+  /// Selotip kertas tempel (pink transparan 45%).
+  static const selotip = Color(0x73D63F75);
+
+  // ------------------------------------------------------------- efek
+  /// Bayangan lembut untuk semua frame putih.
+  static const cardShadow = [BoxShadow(color: Color(0x383A1426), blurRadius: 16, offset: Offset(0, 6))];
+
+  /// Bayangan pink tipis untuk kartu yang sedang berlangsung.
+  static const activeShadow = [BoxShadow(color: Color(0x40D63F75), blurRadius: 16, offset: Offset(0, 6))];
+
+  /// Bayangan bottom nav (ke atas).
+  static const navShadow = [BoxShadow(color: Color(0x383A1426), blurRadius: 16, offset: Offset(0, -6))];
 }

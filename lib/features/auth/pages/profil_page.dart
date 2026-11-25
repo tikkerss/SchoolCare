@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
+import 'package:schoolcare/core/theme/app_colors.dart';
 import 'package:schoolcare/features/auth/data/profile.dart';
 import 'package:schoolcare/features/auth/providers/auth_provider.dart';
 
@@ -26,12 +27,20 @@ class ProfilPage extends StatelessWidget {
           Center(
             child: CircleAvatar(
               radius: 40,
-              child: Text(p.namaLengkap[0], style: const TextStyle(fontSize: 32)),
+              backgroundColor: AppColors.white,
+              foregroundColor: AppColors.pink,
+              child: Text(p.namaLengkap[0], style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800)),
             ),
           ),
           const SizedBox(height: 12),
-          Center(child: Text(p.namaLengkap, style: Theme.of(context).textTheme.titleLarge)),
-          Center(child: Text(peran)),
+          Center(
+            child: Text(
+              p.namaLengkap,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(color: AppColors.white),
+            ),
+          ),
+          Center(child: Text(peran, style: const TextStyle(color: AppColors.white))),
           const SizedBox(height: 24),
           if (auth.isWaliKelas)
             Card(
@@ -43,6 +52,7 @@ class ProfilPage extends StatelessWidget {
                 onTap: () => context.push('/wali'),
               ),
             ),
+          if (auth.isWaliKelas) const SizedBox(height: 12),
           Card(
             child: Column(children: [
               ListTile(
@@ -68,9 +78,16 @@ class ProfilPage extends StatelessWidget {
             child: Text(
               'Perubahan data dilakukan oleh pihak sekolah.',
               textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12, color: AppColors.white),
             ),
           ),
           OutlinedButton.icon(
+            // Tombol langsung di atas latar pink: softYellow, teks ink Bold.
+            style: OutlinedButton.styleFrom(
+              backgroundColor: AppColors.softYellow,
+              foregroundColor: AppColors.ink,
+              side: BorderSide.none,
+            ),
             icon: const Icon(Icons.logout),
             label: const Text('Keluar'),
             onPressed: () async {

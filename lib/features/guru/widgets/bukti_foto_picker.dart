@@ -46,39 +46,70 @@ class _BuktiFotoPickerState extends State<BuktiFotoPicker> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (bukti == null)
+          Container(
+            height: 160,
+            decoration: BoxDecoration(color: AppColors.softPink, borderRadius: BorderRadius.circular(20)),
+            child: const Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.photo_camera_outlined, size: 40, color: AppColors.black),
+                SizedBox(height: 6),
+                Text(
+                  'Belum ada foto',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.black),
+                ),
+              ],
+            ),
+          ),
         if (bukti != null) ...[
           ClipRRect(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(20),
             child: Image.file(bukti.file, height: 220, fit: BoxFit.cover),
           ),
           const SizedBox(height: 8),
-          Row(children: [
-            const Icon(Icons.location_on_outlined, size: 16),
-            const SizedBox(width: 4),
-            Expanded(
-              child: Text(
-                '${bukti.latitude.toStringAsFixed(6)}, ${bukti.longitude.toStringAsFixed(6)} '
-                '(±${bukti.akurasiMeter.round()} m)',
-                style: kecil,
+          Row(
+            children: [
+              const Icon(Icons.location_on_outlined, size: 16, color: AppColors.pink),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  '${bukti.latitude.toStringAsFixed(6)}, ${bukti.longitude.toStringAsFixed(6)} '
+                  '(±${bukti.akurasiMeter.round()} m)',
+                  style: kecil?.copyWith(fontSize: 11),
+                ),
               ),
-            ),
-          ]),
-          Row(children: [
-            const Icon(Icons.schedule, size: 16),
-            const SizedBox(width: 4),
-            Text(DateFormat('dd/MM/yyyy HH:mm:ss').format(bukti.waktu), style: kecil),
-          ]),
+            ],
+          ),
+          Row(
+            children: [
+              const Icon(Icons.schedule, size: 16, color: AppColors.inkMuted),
+              const SizedBox(width: 4),
+              Text(DateFormat('dd/MM/yyyy HH:mm:ss').format(bukti.waktu), style: kecil?.copyWith(fontSize: 11)),
+            ],
+          ),
           if (jarak != null && jarak > radiusSekolahMeter)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                'Lokasi di luar area sekolah (± ${(jarak / 1000).toStringAsFixed(1)} km). '
-                'Absensi tetap bisa disimpan, tetapi akan ditandai di laporan sekolah.',
-                style: kecil?.copyWith(color: AppColors.warning),
+            Container(
+              margin: const EdgeInsets.only(top: 8),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: AppColors.softYellow, borderRadius: BorderRadius.circular(14)),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.location_off_outlined, size: 18, color: AppColors.black),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Lokasi di luar area sekolah (± ${(jarak / 1000).toStringAsFixed(1)} km). '
+                      'Absensi tetap bisa disimpan, tetapi akan ditandai di laporan sekolah.',
+                      style: kecil?.copyWith(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.black),
+                    ),
+                  ),
+                ],
               ),
             ),
-          const SizedBox(height: 8),
         ],
+        const SizedBox(height: 10),
         OutlinedButton.icon(
           icon: _memuat
               ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))

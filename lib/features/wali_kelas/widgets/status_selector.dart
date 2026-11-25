@@ -1,14 +1,15 @@
 import 'package:material_ui/material_ui.dart';
 
+import 'package:schoolcare/core/theme/app_colors.dart';
+import 'package:schoolcare/shared/widgets/status_badge.dart';
+
 import '../data/models.dart';
 
-Color warnaStatus(StatusAbsen s) => switch (s) {
-  StatusAbsen.hadir => const Color(0xFF2E9E5B),
-  StatusAbsen.terlambat => const Color(0xFFE0A100),
-  StatusAbsen.izin => const Color(0xFF1E6FD9),
-  StatusAbsen.sakit => const Color(0xFF8E5CD9),
-  StatusAbsen.alpa => const Color(0xFFD64545),
-};
+/// Gaya chip per status (sama dengan StatusBadge bersama).
+GayaChip gayaStatus(StatusAbsen s) => StatusBadge.gayaOf(s.dbValue);
+
+/// Satu warna yang mewakili status (untuk garis tepi/titik).
+Color warnaStatus(StatusAbsen s) => gayaStatus(s).aksen;
 
 /// Lima tombol bulat H / T / I / S / A.
 class StatusSelector extends StatelessWidget {
@@ -29,7 +30,7 @@ class StatusSelector extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: StatusAbsen.values.map((s) {
         final dipilih = s == value;
-        final warna = warnaStatus(s);
+        final gaya = gayaStatus(s);
         return Padding(
           padding: const EdgeInsets.only(left: 4),
           child: Tooltip(
@@ -43,18 +44,19 @@ class StatusSelector extends StatelessWidget {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: dipilih ? warna : Colors.transparent,
+                  color: dipilih ? gaya.latar : AppColors.white,
                   border: Border.all(
-                    color: enabled || dipilih ? warna : Colors.grey.shade300,
+                    color: dipilih ? AppColors.pink : AppColors.softPink,
+                    width: dipilih ? 2 : 1.5,
                   ),
                 ),
                 child: Text(
                   s.kode,
                   style: TextStyle(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w700,
                     color: dipilih
-                        ? Colors.white
-                        : (enabled ? warna : Colors.grey.shade400),
+                        ? gaya.teks
+                        : (enabled ? AppColors.ink : AppColors.inkFaint),
                   ),
                 ),
               ),

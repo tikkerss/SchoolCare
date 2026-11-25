@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
+import 'package:schoolcare/core/theme/app_colors.dart';
 import 'package:schoolcare/features/orang_tua/data/ortu_models.dart';
 import 'package:schoolcare/features/orang_tua/data/ortu_repository.dart';
 import 'package:schoolcare/features/orang_tua/widgets/ortu_ui.dart';
+import 'package:schoolcare/shared/widgets/ticket_card.dart';
 
 /// Aktivitas kelas anak per jam pelajaran: status kelas, guru yang mengajar,
 /// berita acara, dan foto bukti dari guru. Diperbarui otomatis tiap 60 detik.
@@ -93,10 +95,14 @@ class _AktivitasHarianPageState extends State<AktivitasHarianPage> {
       body = RefreshIndicator(
         onRefresh: () => _ambil(diam: true),
         child: ListView.separated(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
           itemCount: data.length,
           separatorBuilder: (_, _) => const SizedBox(height: 12),
-          itemBuilder: (_, i) => _KartuAktivitas(a: data[i], sorot: hariIni && data[i].sedangBerlangsung),
+          itemBuilder: (_, i) => _KartuAktivitas(
+            key: ValueKey('${data[i].jamKe}-${data[i].jamMulai}'),
+            a: data[i],
+            sorot: hariIni && data[i].sedangBerlangsung,
+          ),
         ),
       );
     }
@@ -108,12 +114,16 @@ class _AktivitasHarianPageState extends State<AktivitasHarianPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text('Aktivitas Harian'),
-            Text('${widget.anak.nama} · ${OrtuFmt.hari(_tanggal)}', style: Theme.of(context).textTheme.bodySmall),
+            Text(
+              '${widget.anak.nama} · ${OrtuFmt.hari(_tanggal)}',
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: AppColors.white),
+            ),
           ],
         ),
         actions: [
           if (!hariIni)
             TextButton(
+              style: TextButton.styleFrom(foregroundColor: AppColors.white),
               onPressed: () {
                 _tanggal = DateTime.now();
                 _muatUlang();
@@ -123,59 +133,162 @@ class _AktivitasHarianPageState extends State<AktivitasHarianPage> {
           IconButton(icon: const Icon(Icons.calendar_today), tooltip: 'Pilih tanggal', onPressed: _pilihTanggal),
         ],
       ),
-      body: body,
+      body: Column(children: [
+        _StripHari(
+          terpilih: _tanggal,
+          onPilih: (t) {
+            if (DateUtils.isSameDay(t, _tanggal)) return;
+            _tanggal = t;
+            _muatUlang();
+          },
+        ),
+        Expanded(child: body),
+      ]),
     );
   }
 }
 
-class _KartuAktivitas extends StatelessWidget {
-  const _KartuAktivitas({required this.a, required this.sorot});
+/// Strip 5 hari kerja (Sen–Jum) di minggu tanggal terpilih. Hari aktif = pink.
+class _StripHari extends StatelessWidget {
+  const _StripHari({required this.terpilih, required this.onPilih});
+
+  final DateTime terpilih;
+  final ValueChanged<DateTime> onPilih;
+
+  static const _hari = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum'];
+
+  @override
+  Widget build(BuildContext context) {
+    final t = DateUtils.dateOnly(terpilih);
+    // Sabtu/Minggu → tampilkan minggu itu juga (Senin sebelumnya).
+    final senin = t.subtract(Duration(days: t.weekday - 1));
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+      // Di dalam kartu putih supaya hari aktif (pink) tetap terlihat di atas latar pink.
+      child: SoftCard(
+        padding: const EdgeInsets.all(8),
+        child: Row(children: [
+          for (var i = 0; i < 5; i++) Expanded(child: _sel(senin.add(Duration(days: i)), i)),
+        ]),
+      ),
+    );
+  }
+
+  Widget _sel(DateTime d, int i) {
+    final aktif = DateUtils.isSameDay(d, terpilih);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 3),
+      child: Material(
+        color: aktif ? AppColors.pink : AppColors.white,
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: () => onPilih(d),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: aktif ? null : Border.all(color: AppColors.softPink, width: 1.5),
+            ),
+            child: Column(children: [
+              Text(
+                _hari[i],
+                style: TextStyle(fontSize: 11, color: aktif ? AppColors.white : AppColors.inkMuted),
+              ),
+              Text(
+                '${d.day}',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: aktif ? AppColors.white : AppColors.ink,
+                ),
+              ),
+            ]),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Kartu tiket satu jam pelajaran. Ketuk untuk membuka foto bukti + berita acara.
+class _KartuAktivitas extends StatefulWidget {
+  const _KartuAktivitas({super.key, required this.a, required this.sorot});
 
   final AktivitasKelas a;
   final bool sorot; // pelajaran yang sedang berlangsung
 
   @override
+  State<_KartuAktivitas> createState() => _KartuAktivitasState();
+}
+
+class _KartuAktivitasState extends State<_KartuAktivitas> {
+  late bool _terbuka = widget.sorot;
+
+  @override
   Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    return Card(
-      color: sorot ? OrtuWarna.primary.withValues(alpha: 0.06) : null,
-      shape: sorot
-          ? RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: const BorderSide(color: OrtuWarna.primary, width: 1.5),
-            )
-          : null,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+    final a = widget.a;
+    final adaDetail = a.beritaAcara != null || a.fotoUrl != null;
+    return TicketCard(
+      jamMulai: OrtuFmt.jam(a.jamMulai),
+      jamSelesai: OrtuFmt.jam(a.jamSelesai),
+      labelAtas: 'Jam ${a.jamKe}',
+      sorot: widget.sorot,
+      onTap: adaDetail ? () => setState(() => _terbuka = !_terbuka) : null,
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(a.mapel, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 2),
+              Text(
+                [
+                  a.digantikan ? 'Digantikan ${a.guruMengajar} (seharusnya ${a.guruTerjadwal})' : a.guruTerjadwal,
+                  if (a.ruang != null) a.ruang!,
+                ].join(' · '),
+                style: const TextStyle(fontSize: 12, color: AppColors.inkMuted),
+              ),
+            ]),
+          ),
+          const SizedBox(width: 8),
+          StatusChip(a.statusKelas),
+        ]),
+        if (a.infoKegiatan != null) ...[
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(color: AppColors.softYellow, borderRadius: BorderRadius.circular(8)),
+            child: Text(
+              a.infoKegiatan!,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.black),
+            ),
+          ),
+        ],
+        if (adaDetail) ...[
+          const SizedBox(height: 6),
           Row(children: [
-            Expanded(
+            Flexible(
               child: Text(
-                'Jam ${a.jamKe} · ${OrtuFmt.jam(a.jamMulai)}–${OrtuFmt.jam(a.jamSelesai)}'
-                '${a.ruang != null ? ' · ${a.ruang}' : ''}',
-                style: const TextStyle(color: OrtuWarna.textSecondary),
+                _terbuka ? 'Tutup detail' : 'Lihat foto & berita acara',
+                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.pink),
               ),
             ),
-            StatusChip(a.statusKelas),
+            Icon(_terbuka ? Icons.expand_less : Icons.expand_more, size: 16, color: AppColors.pink),
           ]),
-          const SizedBox(height: 6),
-          Text(a.mapel, style: text.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 2),
-          Text(a.digantikan ? 'Digantikan ${a.guruMengajar} (seharusnya ${a.guruTerjadwal})' : a.guruTerjadwal),
-          if (a.infoKegiatan != null) ...[
-            const SizedBox(height: 8),
-            Text(a.infoKegiatan!, style: const TextStyle(color: OrtuWarna.purple, fontWeight: FontWeight.w600)),
-          ],
-          if (a.beritaAcara != null) ...[
-            const SizedBox(height: 8),
-            Text('Kegiatan: ${a.beritaAcara}'),
-          ],
+        ],
+        if (_terbuka) ...[
           if (a.fotoUrl != null) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             _FotoBukti(url: a.fotoUrl!),
           ],
-        ]),
-      ),
+          if (a.beritaAcara != null) ...[
+            const SizedBox(height: 10),
+            const Text('Berita acara', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 2),
+            Text(a.beritaAcara!, style: const TextStyle(fontSize: 12)),
+          ],
+        ],
+      ]),
     );
   }
 }
@@ -192,11 +305,11 @@ class _FotoBukti extends StatelessWidget {
         width: double.infinity,
         fit: fit,
         loadingBuilder: (_, child, progress) =>
-            progress == null ? child : Container(height: tinggi ?? 160, color: OrtuWarna.border),
+            progress == null ? child : Container(height: tinggi ?? 160, color: AppColors.softPink),
         errorBuilder: (_, _, _) => Container(
           height: tinggi ?? 160,
-          color: OrtuWarna.border,
-          child: const Center(child: Icon(Icons.broken_image_outlined)),
+          color: AppColors.softPink,
+          child: const Center(child: Icon(Icons.broken_image_outlined, color: AppColors.black)),
         ),
       );
 
@@ -209,6 +322,6 @@ class _FotoBukti extends StatelessWidget {
             child: InteractiveViewer(child: _gambar(fit: BoxFit.contain)),
           ),
         ),
-        child: ClipRRect(borderRadius: BorderRadius.circular(12), child: _gambar(tinggi: 160)),
+        child: ClipRRect(borderRadius: BorderRadius.circular(14), child: _gambar(tinggi: 160)),
       );
 }

@@ -39,7 +39,7 @@ class _PengumumanPageState extends State<PengumumanPage> {
                 final p = list[i];
                 return Card(
                   child: ListTile(
-                    title: Text(p.judul, style: const TextStyle(fontWeight: FontWeight.w600)),
+                    title: Text(p.judul, style: const TextStyle(fontWeight: FontWeight.w700)),
                     subtitle: Text(
                       '${Fmt.tanggal(p.tanggal)} · ${p.isi}',
                       maxLines: 2,

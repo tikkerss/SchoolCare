@@ -1,10 +1,12 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:schoolcare/core/theme/app_colors.dart';
 
 import '../data/rapor_models.dart';
 import '../data/rapor_repository.dart';
 import '../utils/format_tanggal.dart';
 import '../widgets/status_rapor_badge.dart';
+import 'package:schoolcare/shared/widgets/permukaan.dart';
 
 class RaporDetailPage extends StatefulWidget {
   const RaporDetailPage({
@@ -230,7 +232,7 @@ class _RaporDetailPageState extends State<RaporDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(_rapor?.siswa.nama ?? 'Rapor')),
-      body: _buildBody(),
+      body: LembarPutih(child: _buildBody()),
       bottomNavigationBar: _rapor == null ? null : _tombolAksi(),
     );
   }
@@ -304,7 +306,7 @@ class _RaporDetailPageState extends State<RaporDetailPage> {
         const SizedBox(height: 8),
         Card(
           child: ListTile(
-            leading: const Icon(Icons.picture_as_pdf, color: Color(0xFFD64545)),
+            leading: const Icon(Icons.picture_as_pdf, color: AppColors.pink),
             title: Text(
               r.filePdf == null ? 'Belum ada file' : r.filePdf!.split('/').last,
             ),
@@ -335,33 +337,41 @@ class _RaporDetailPageState extends State<RaporDetailPage> {
       StatusRapor.belumDisusun || StatusRapor.draft => (
         Icons.edit_note,
         'Lengkapi nilai, catatan, dan PDF, lalu terbitkan.',
-        const Color(0xFFE0A100),
+        AppColors.softYellow,
       ),
       StatusRapor.terbit => (
         Icons.lock_clock,
         'Rapor sudah terbit. Konfirmasi setelah orang tua mengambil rapor fisik '
             'agar rapor digital terbuka.',
-        const Color(0xFF1E6FD9),
+        AppColors.orange,
       ),
       StatusRapor.diambil => (
         Icons.verified,
         'Rapor fisik diambil ${formatTanggal(r.diambilPada!)}, ${formatJam(r.diambilPada!)}. '
             'Rapor digital sudah terbuka untuk orang tua.',
-        const Color(0xFF2E9E5B),
+        AppColors.softPink,
       ),
     };
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: warna.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: warna.withValues(alpha: 0.5)),
+        color: warna,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [
-          Icon(ikon, color: warna),
+          Icon(ikon, color: AppColors.teksDi(warna)),
           const SizedBox(width: 12),
-          Expanded(child: Text(teks)),
+          Expanded(
+            child: Text(
+              teks,
+              style: TextStyle(
+                fontSize: 13,
+                color: AppColors.teksDi(warna),
+                fontWeight: AppColors.latarMuda(warna) ? FontWeight.w700 : FontWeight.w400,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -428,7 +438,7 @@ class _RaporDetailPageState extends State<RaporDetailPage> {
       child: CircularProgressIndicator(strokeWidth: 2),
     );
 
-    return SafeArea(
+    return BilahBawahPutih(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: status == StatusRapor.terbit

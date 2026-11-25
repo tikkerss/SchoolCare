@@ -1,7 +1,9 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:schoolcare/core/theme/app_colors.dart';
 import 'package:schoolcare/core/utils/fmt.dart';
 import 'package:schoolcare/features/guru/data/tugas_repository.dart';
 import 'package:schoolcare/features/guru/models/tugas.dart';
+import 'package:schoolcare/shared/widgets/permukaan.dart';
 import 'package:schoolcare/shared/widgets/state_views.dart';
 
 /// Form tambah / ubah tugas. Kembali dengan `true` kalau tersimpan.
@@ -74,9 +76,8 @@ class _TugasFormPageState extends State<TugasFormPage> {
         tenggat: _tenggat,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_ubah ? 'Tugas diperbarui.' : 'Tugas ditambahkan.')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(_ubah ? 'Tugas diperbarui.' : 'Tugas ditambahkan.')));
       Navigator.pop(context, true);
     } catch (e) {
       debugPrint('TugasFormPage: $e');
@@ -92,62 +93,70 @@ class _TugasFormPageState extends State<TugasFormPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(_ubah ? 'Ubah Tugas' : 'Tambah Tugas')),
-      body: AsyncView<List<KelasMapel>>(
-        future: _pilihan,
-        onRetry: () => setState(() => _pilihan = _muatPilihan()),
-        isEmpty: (list) => list.isEmpty,
-        emptyMessage: 'Anda belum punya jadwal mengajar di semester ini, jadi belum bisa membuat tugas.',
-        builder: (context, pilihan) {
-          final bisaSimpan = _kunci != null && _judul.text.trim().isNotEmpty && !_menyimpan;
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              DropdownButtonFormField<String>(
-                initialValue: pilihan.any((k) => k.kunci == _kunci) ? _kunci : null,
-                isExpanded: true,
-                decoration: const InputDecoration(labelText: 'Kelas & mata pelajaran', border: OutlineInputBorder()),
-                items: [
-                  for (final k in pilihan)
-                    DropdownMenuItem(value: k.kunci, child: Text(k.label, overflow: TextOverflow.ellipsis)),
-                ],
-                onChanged: (v) => setState(() => _kunci = v),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _judul,
-                onChanged: (_) => setState(() {}),
-                decoration: const InputDecoration(labelText: 'Judul tugas', border: OutlineInputBorder()),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _deskripsi,
-                maxLines: 4,
-                decoration: const InputDecoration(
-                  labelText: 'Petunjuk (opsional)',
-                  hintText: 'Contoh: kerjakan buku paket hal. 25 no. 1–10',
-                  border: OutlineInputBorder(),
-                  alignLabelWithHint: true,
+      body: LembarPutih(
+        child: AsyncView<List<KelasMapel>>(
+          future: _pilihan,
+          onRetry: () => setState(() => _pilihan = _muatPilihan()),
+          isEmpty: (list) => list.isEmpty,
+          emptyMessage: 'Anda belum punya jadwal mengajar di semester ini, jadi belum bisa membuat tugas.',
+          builder: (context, pilihan) {
+            final bisaSimpan = _kunci != null && _judul.text.trim().isNotEmpty && !_menyimpan;
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+              children: [
+                DropdownButtonFormField<String>(
+                  initialValue: pilihan.any((k) => k.kunci == _kunci) ? _kunci : null,
+                  isExpanded: true,
+                  decoration: const InputDecoration(labelText: 'Kelas & mata pelajaran'),
+                  items: [
+                    for (final k in pilihan)
+                      DropdownMenuItem(
+                        value: k.kunci,
+                        child: Text(k.label, overflow: TextOverflow.ellipsis),
+                      ),
+                  ],
+                  onChanged: (v) => setState(() => _kunci = v),
                 ),
-              ),
-              const SizedBox(height: 16),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.event_outlined),
-                title: const Text('Deadline'),
-                subtitle: Text(Fmt.waktu(_tenggat)),
-                trailing: const Icon(Icons.edit_calendar_outlined),
-                onTap: _pilihTanggal,
-              ),
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: bisaSimpan ? () => _simpan(pilihan) : null,
-                child: _menyimpan
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                    : Text(_ubah ? 'Simpan Perubahan' : 'Tambah Tugas'),
-              ),
-            ],
-          );
-        },
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _judul,
+                  onChanged: (_) => setState(() {}),
+                  decoration: const InputDecoration(labelText: 'Judul tugas'),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _deskripsi,
+                  maxLines: 4,
+                  decoration: const InputDecoration(
+                    labelText: 'Petunjuk (opsional)',
+                    hintText: 'Contoh: kerjakan buku paket hal. 25 no. 1–10',
+                    alignLabelWithHint: true,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14),
+                  shape: RoundedRectangleBorder(
+                    side: const BorderSide(color: AppColors.softPink, width: 1.5),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  leading: const Icon(Icons.event_outlined),
+                  title: const Text('Deadline'),
+                  subtitle: Text(Fmt.waktu(_tenggat)),
+                  trailing: const Icon(Icons.edit_calendar_outlined, color: AppColors.pink),
+                  onTap: _pilihTanggal,
+                ),
+                const SizedBox(height: 24),
+                FilledButton(
+                  onPressed: bisaSimpan ? () => _simpan(pilihan) : null,
+                  child: _menyimpan
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      : Text(_ubah ? 'Simpan Perubahan' : 'Tambah Tugas'),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

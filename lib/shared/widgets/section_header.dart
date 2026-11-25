@@ -1,4 +1,6 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:schoolcare/core/theme/app_colors.dart';
+import 'package:schoolcare/shared/widgets/permukaan.dart';
 
 /// Judul bagian + tombol aksi opsional di kanan ("Lihat semua").
 class SectionHeader extends StatelessWidget {
@@ -15,10 +17,18 @@ class SectionHeader extends StatelessWidget {
           Expanded(
             child: Text(
               title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontSize: 15, fontWeight: FontWeight.w700, color: Permukaan.teks(context)),
             ),
           ),
-          if (onAction != null) TextButton(onPressed: onAction, child: Text(actionLabel)),
+          if (onAction != null)
+            TextButton(
+              onPressed: onAction,
+              style: Permukaan.diPutih(context) ? null : TextButton.styleFrom(foregroundColor: AppColors.white),
+              child: Text(actionLabel),
+            ),
         ]),
       );
 }

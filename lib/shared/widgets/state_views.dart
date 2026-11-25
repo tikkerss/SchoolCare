@@ -1,11 +1,14 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:schoolcare/core/theme/app_colors.dart';
+import 'package:schoolcare/shared/widgets/permukaan.dart';
 
 class LoadingView extends StatelessWidget {
   const LoadingView({super.key});
 
   @override
-  Widget build(BuildContext context) => const Center(child: CircularProgressIndicator());
+  Widget build(BuildContext context) => Center(
+        child: CircularProgressIndicator(color: Permukaan.diPutih(context) ? AppColors.pink : AppColors.white),
+      );
 }
 
 class EmptyState extends StatelessWidget {
@@ -15,20 +18,19 @@ class EmptyState extends StatelessWidget {
   final IconData icon;
 
   @override
-  Widget build(BuildContext context) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Icon(icon, size: 56, color: AppColors.textSecondary),
-            const SizedBox(height: 12),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textSecondary),
-            ),
-          ]),
-        ),
-      );
+  Widget build(BuildContext context) {
+    final putih = Permukaan.diPutih(context);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Icon(icon, size: 56, color: putih ? AppColors.softPink : AppColors.white),
+          const SizedBox(height: 12),
+          Text(message, textAlign: TextAlign.center, style: TextStyle(color: Permukaan.teksRedup(context))),
+        ]),
+      ),
+    );
+  }
 }
 
 class ErrorView extends StatelessWidget {
@@ -38,17 +40,25 @@ class ErrorView extends StatelessWidget {
   final VoidCallback? onRetry;
 
   @override
-  Widget build(BuildContext context) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            const Icon(Icons.wifi_off, size: 48, color: AppColors.danger),
-            const SizedBox(height: 8),
-            Text(message, textAlign: TextAlign.center),
-            if (onRetry != null) TextButton(onPressed: onRetry, child: const Text('Coba lagi')),
-          ]),
-        ),
-      );
+  Widget build(BuildContext context) {
+    final warna = Permukaan.diPutih(context) ? null : AppColors.white;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Icon(Icons.wifi_off, size: 48, color: warna ?? AppColors.danger),
+          const SizedBox(height: 8),
+          Text(message, textAlign: TextAlign.center, style: TextStyle(color: warna ?? AppColors.ink)),
+          if (onRetry != null)
+            TextButton(
+              onPressed: onRetry,
+              style: warna == null ? null : TextButton.styleFrom(foregroundColor: warna),
+              child: const Text('Coba lagi'),
+            ),
+        ]),
+      ),
+    );
+  }
 }
 
 /// Pembungkus FutureBuilder: otomatis menampilkan loading, error, dan data kosong.

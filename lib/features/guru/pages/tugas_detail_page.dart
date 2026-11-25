@@ -5,8 +5,11 @@ import 'package:schoolcare/core/utils/fmt.dart';
 import 'package:schoolcare/features/guru/data/tugas_repository.dart';
 import 'package:schoolcare/features/guru/models/tugas.dart';
 import 'package:schoolcare/features/guru/pages/tugas_form_page.dart';
+import 'package:schoolcare/shared/widgets/permukaan.dart';
 import 'package:schoolcare/shared/widgets/section_header.dart';
 import 'package:schoolcare/shared/widgets/state_views.dart';
+import 'package:schoolcare/shared/widgets/status_badge.dart';
+import 'package:schoolcare/shared/widgets/ticket_card.dart';
 
 /// Detail tugas + penilaian per siswa (mirip Google Classroom).
 /// Nilai 0–100; kosongkan kolom untuk menghapus nilai.
@@ -166,9 +169,9 @@ class _TugasDetailPageState extends State<TugasDetailPage> {
       ),
       bottomNavigationBar: _siswa == null || _siswa!.isEmpty
           ? null
-          : SafeArea(
+          : BilahBawahPutih(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
                 child: FilledButton(
                   onPressed: _menyimpan ? null : _simpanNilai,
                   child: _menyimpan
@@ -177,66 +180,103 @@ class _TugasDetailPageState extends State<TugasDetailPage> {
                 ),
               ),
             ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text(t.judul, style: theme.textTheme.titleLarge),
-          const SizedBox(height: 4),
-          Text('${t.mapel} • Kelas ${t.namaKelas}'),
-          const SizedBox(height: 8),
-          Row(children: [
-            Icon(Icons.event_outlined, size: 18, color: t.lewat ? AppColors.danger : null),
-            const SizedBox(width: 6),
+      body: LembarPutih(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+          children: [
             Text(
-              'Deadline ${Fmt.waktu(t.tenggat)}${t.lewat ? ' (sudah lewat)' : ''}',
-              style: TextStyle(color: t.lewat ? AppColors.danger : null),
+              t.judul,
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                color: AppColors.ink,
+              ),
             ),
-          ]),
-          if (t.deskripsi != null) ...[
-            const SizedBox(height: 12),
-            Text(t.deskripsi!),
-          ],
-          SectionHeader(_siswa == null ? 'Penilaian' : 'Penilaian ($_jumlahTerisi/${_siswa!.length} dinilai)'),
-          if (_gagal)
-            ErrorView(onRetry: _muatNilai)
-          else if (_siswa == null)
-            const Padding(padding: EdgeInsets.all(32), child: LoadingView())
-          else if (_siswa!.isEmpty)
-            const EmptyState(message: 'Belum ada siswa di kelas ini.')
-          else ...[
-            Text(
-              'Isi nilai 0–100. Kosongkan kolom untuk menghapus nilai. Nilai langsung terlihat oleh orang tua.',
-              style: theme.textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                StatusPill(label: t.mapel, gaya: GayaChip.softPink),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text('Kelas ${t.namaKelas}', style: const TextStyle(fontSize: 13, color: AppColors.inkMuted)),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            Card(
-              child: Column(children: [
-                for (final s in _siswa!) ...[
-                  ListTile(
-                    title: Text(s.nama),
-                    subtitle: Text('NIS ${s.nis}'),
-                    trailing: SizedBox(
-                      width: 72,
-                      child: TextField(
-                        controller: _kolom[s.siswaId],
-                        textAlign: TextAlign.center,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))],
-                        onChanged: (_) => setState(() {}),
-                        decoration: const InputDecoration(
-                          hintText: '–',
-                          isDense: true,
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Icon(Icons.event_outlined, size: 18, color: t.lewat ? AppColors.pink : AppColors.inkMuted),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'Deadline ${Fmt.waktu(t.tenggat)}${t.lewat ? ' (sudah lewat)' : ''}',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: t.lewat ? AppColors.pink : AppColors.ink,
+                      fontWeight: t.lewat ? FontWeight.w700 : FontWeight.w400,
                     ),
                   ),
-                  if (s != _siswa!.last) const Divider(height: 1),
-                ],
-              ]),
+                ),
+              ],
             ),
+            if (t.deskripsi != null) ...[
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(color: AppColors.softYellow, borderRadius: BorderRadius.circular(16)),
+                child: Text(
+                  t.deskripsi!,
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.black),
+                ),
+              ),
+            ],
+            SectionHeader(_siswa == null ? 'Penilaian' : 'Penilaian ($_jumlahTerisi/${_siswa!.length} dinilai)'),
+            if (_gagal)
+              ErrorView(onRetry: _muatNilai)
+            else if (_siswa == null)
+              const Padding(padding: EdgeInsets.all(32), child: LoadingView())
+            else if (_siswa!.isEmpty)
+              const EmptyState(message: 'Belum ada siswa di kelas ini.')
+            else ...[
+              Text(
+                'Isi nilai 0–100. Kosongkan kolom untuk menghapus nilai. Nilai langsung terlihat oleh orang tua.',
+                style: theme.textTheme.bodySmall?.copyWith(fontSize: 11, color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 10),
+              SoftCard(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Column(
+                  children: [
+                    for (final s in _siswa!) ...[
+                      ListTile(
+                        title: Text(s.nama),
+                        subtitle: Text('NIS ${s.nis}'),
+                        trailing: SizedBox(
+                          width: 72,
+                          child: TextField(
+                            controller: _kolom[s.siswaId],
+                            textAlign: TextAlign.center,
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))],
+                            onChanged: (_) => setState(() {}),
+                            style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.ink),
+                            decoration: const InputDecoration(
+                              hintText: '–',
+                              isDense: true,
+                              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (s != _siswa!.last) const Divider(height: 1, indent: 16, endIndent: 16),
+                    ],
+                  ],
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

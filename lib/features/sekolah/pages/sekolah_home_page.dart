@@ -56,7 +56,13 @@ class _SekolahHomePageState extends State<SekolahHomePage> {
       body: RefreshIndicator(
         onRefresh: () async => _muatUlang(),
         child: ListView(padding: const EdgeInsets.all(16), children: [
-          Text('Halo, $nama', style: Theme.of(context).textTheme.titleLarge),
+          Text.rich(
+            TextSpan(children: [
+              const TextSpan(text: 'Halo, '),
+              TextSpan(text: nama, style: const TextStyle(color: AppColors.softYellow)),
+            ]),
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.white, height: 1.25),
+          ),
           const SizedBox(height: 12),
 
           // ---- Tahun ajaran aktif
@@ -66,10 +72,19 @@ class _SekolahHomePageState extends State<SekolahHomePage> {
               final ta = snap.data;
               final belum = snap.connectionState == ConnectionState.done && ta == null;
               return Card(
-                color: belum ? AppColors.warning.withValues(alpha: 0.1) : null,
+                color: belum ? AppColors.softYellow : null,
                 child: ListTile(
+                  // softYellow → teks hitam bold.
+                  textColor: belum ? AppColors.black : null,
+                  titleTextStyle: belum
+                      ? const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.black)
+                      : null,
+                  subtitleTextStyle: belum
+                      ? const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.black)
+                      : null,
+                  iconColor: belum ? AppColors.black : null,
                   leading: Icon(belum ? Icons.warning_amber : Icons.event_note,
-                      color: belum ? AppColors.warning : AppColors.primary),
+                      color: belum ? AppColors.black : AppColors.primary),
                   title: Text(snap.connectionState != ConnectionState.done
                       ? 'Memuat tahun ajaran…'
                       : belum

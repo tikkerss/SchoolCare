@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:schoolcare/core/theme/app_colors.dart';
 
 import '../../wali_kelas/utils/format_tanggal.dart';
 import '../../wali_kelas/widgets/status_badge.dart' show warnaPersen;
@@ -6,6 +7,7 @@ import '../data/laporan_models.dart';
 import '../data/laporan_repository.dart';
 import '../widgets/status_guru_badge.dart';
 import 'detail_absensi_guru_page.dart';
+import 'package:schoolcare/shared/widgets/permukaan.dart';
 
 enum _Filter { semua, hadir, digantikan, dibatalkan, belum, luarArea }
 
@@ -100,7 +102,7 @@ class _LaporanAbsensiGuruPageState extends State<LaporanAbsensiGuruPage> {
             ],
           ),
         ),
-        body: _loading
+        body: LembarPutih(child: _loading
             ? const Center(child: CircularProgressIndicator())
             : _error != null
             ? Center(
@@ -116,7 +118,7 @@ class _LaporanAbsensiGuruPageState extends State<LaporanAbsensiGuruPage> {
                   ],
                 ),
               )
-            : TabBarView(children: [_tabHarian(), _tabPerGuru()]),
+            : TabBarView(children: [_tabHarian(), _tabPerGuru()])),
       ),
     );
   }
@@ -177,7 +179,7 @@ class _LaporanAbsensiGuruPageState extends State<LaporanAbsensiGuruPage> {
                           ? const Icon(
                               Icons.location_off,
                               size: 16,
-                              color: Color(0xFFD64545),
+                              color: AppColors.pink,
                             )
                           : null,
                       onSelected: (_) => setState(() => _filter = f),
@@ -195,27 +197,34 @@ class _LaporanAbsensiGuruPageState extends State<LaporanAbsensiGuruPage> {
               ListTile(
                 leading: CircleAvatar(child: Text('${a.jamKe}')),
                 title: Text('${a.mapel} • ${a.kelas}'),
-                subtitle: Text(
-                  '${a.guru}'
-                  '${a.guruPengganti != null ? ' → ${a.guruPengganti}' : ''}'
-                  '  •  ${formatJam(a.jamMulai)}',
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
+                // Badge status ditaruh di bawah teks (bukan trailing) supaya tidak
+                // overflow ke kanan di layar sempit / teks diperbesar.
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (a.diLuarArea)
-                      const Padding(
-                        padding: EdgeInsets.only(right: 6),
-                        child: Tooltip(
-                          message: 'Foto diambil di luar area sekolah',
-                          child: Icon(
-                            Icons.location_off,
-                            color: Color(0xFFD64545),
-                            size: 20,
+                    Text(
+                      '${a.guru}'
+                      '${a.guruPengganti != null ? ' → ${a.guruPengganti}' : ''}'
+                      '  •  ${formatJam(a.jamMulai)}',
+                    ),
+                    const SizedBox(height: 4),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        StatusGuruBadge(a),
+                        if (a.diLuarArea)
+                          const Tooltip(
+                            message: 'Foto diambil di luar area sekolah',
+                            child: Icon(
+                              Icons.location_off,
+                              color: AppColors.pink,
+                              size: 20,
+                            ),
                           ),
-                        ),
-                      ),
-                    StatusGuruBadge(a),
+                      ],
+                    ),
                   ],
                 ),
                 onTap: a.status == StatusKehadiranGuru.belumAbsen

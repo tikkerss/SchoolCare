@@ -1,9 +1,11 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:schoolcare/core/theme/app_colors.dart';
 
 import '../../wali_kelas/data/rapor_models.dart';
 import '../../wali_kelas/widgets/status_rapor_badge.dart';
 import '../data/laporan_models.dart';
 import '../data/laporan_repository.dart';
+import 'package:schoolcare/shared/widgets/permukaan.dart';
 
 class PantauRaporPage extends StatefulWidget {
   const PantauRaporPage({super.key, required this.repository});
@@ -49,7 +51,7 @@ class _PantauRaporPageState extends State<PantauRaporPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Pantau Rapor')),
-      body: _isi(),
+      body: LembarPutih(child: _isi()),
     );
   }
 
@@ -160,7 +162,8 @@ class _PantauRaporPageState extends State<PantauRaporPage> {
                         value: k.progres,
                         minHeight: 6,
                         borderRadius: BorderRadius.circular(4),
-                        color: k.progres == 1 ? const Color(0xFF2E9E5B) : null,
+                        color: k.progres == 1 ? AppColors.pink : AppColors.orange,
+                        backgroundColor: AppColors.softPink,
                       ),
                       const SizedBox(height: 8),
                       _JumlahPerStatus(hitung: k.jml),
@@ -215,7 +218,7 @@ class _DetailRaporKelasPage extends StatelessWidget {
       ..sort((a, b) => a.status.index.compareTo(b.status.index));
     return Scaffold(
       appBar: AppBar(title: Text('Rapor ${data.kelas.namaKelas}')),
-      body: ListView(
+      body: LembarPutih(child: ListView(
         children: [
           ListTile(
             title: Text('Wali kelas: ${data.waliKelas}'),
@@ -233,7 +236,7 @@ class _DetailRaporKelasPage extends StatelessWidget {
             const Divider(height: 1),
           ],
         ],
-      ),
+      )),
     );
   }
 }

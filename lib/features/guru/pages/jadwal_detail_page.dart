@@ -9,6 +9,7 @@ import 'package:schoolcare/features/guru/widgets/catatan_siswa_sheet.dart';
 import 'package:schoolcare/shared/widgets/section_header.dart';
 import 'package:schoolcare/shared/widgets/state_views.dart';
 import 'package:schoolcare/shared/widgets/status_badge.dart';
+import 'package:schoolcare/shared/widgets/ticket_card.dart';
 
 /// Satu jam pelajaran: absensi mengajar + berita acara + daftar siswa (status dari wali kelas)
 /// + catatan per siswa.
@@ -62,19 +63,19 @@ class _JadwalDetailPageState extends State<JadwalDetailPage> {
           await _siswa;
         },
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
           children: [
-            Text('Jam ke-${j.jamKe} • ${j.rentangJam} • ${j.ruang ?? '-'}', style: theme.textTheme.bodyMedium),
+            Text(
+              'Jam ke-${j.jamKe} • ${j.rentangJam} • ${j.ruang ?? '-'}',
+              style: const TextStyle(fontSize: 13, color: AppColors.white),
+            ),
 
             // ------------------------------------------------ absensi mengajar
             const SectionHeader('Absensi Mengajar'),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: j.sudahDiabsen ? _isiAbsensi(j, theme) : _belumAbsen(),
-                ),
+            SoftCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: j.sudahDiabsen ? _isiAbsensi(j, theme) : _belumAbsen(),
               ),
             ),
 
@@ -85,30 +86,34 @@ class _JadwalDetailPageState extends State<JadwalDetailPage> {
               onRetry: _muatUlangSiswa,
               isEmpty: (d) => d.siswa.isEmpty,
               emptyMessage: 'Belum ada siswa di kelas ini.',
-              builder: (context, d) => Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _Ringkasan(daftar: d),
-                  const SizedBox(height: 8),
-                  Text(
-                    d.catatanAktif
-                        ? 'Status diisi wali kelas saat absensi pagi. Ada kejadian? Ketuk nama siswa untuk menulis catatan.'
-                        : 'Status diisi wali kelas saat absensi pagi. Fitur catatan belum aktif (tabel catatan_siswa belum dibuat Backend).',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: d.catatanAktif ? AppColors.textSecondary : AppColors.warning,
+              builder: (context, d) => SoftCard(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                      child: _Ringkasan(daftar: d),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Card(
-                    clipBehavior: Clip.antiAlias,
-                    child: Column(children: [
-                      for (final s in d.siswa) ...[
-                        _SiswaTile(siswa: s, onTap: d.catatanAktif ? () => _bukaCatatan(s) : null),
-                        if (s != d.siswa.last) const Divider(height: 1),
-                      ],
-                    ]),
-                  ),
-                ],
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
+                      child: Text(
+                        d.catatanAktif
+                            ? 'Status diisi wali kelas saat absensi pagi. Ada kejadian? Ketuk nama siswa untuk menulis catatan.'
+                            : 'Status diisi wali kelas saat absensi pagi. Fitur catatan belum aktif (tabel catatan_siswa belum dibuat Backend).',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontSize: 11,
+                          color: d.catatanAktif ? AppColors.textSecondary : AppColors.pink,
+                        ),
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    for (final s in d.siswa) ...[
+                      _SiswaTile(siswa: s, onTap: d.catatanAktif ? () => _bukaCatatan(s) : null),
+                      if (s != d.siswa.last) const Divider(height: 1, indent: 16, endIndent: 16),
+                    ],
+                  ],
+                ),
               ),
             ),
           ],
@@ -118,43 +123,62 @@ class _JadwalDetailPageState extends State<JadwalDetailPage> {
   }
 
   List<Widget> _belumAbsen() => [
-        const Text('Anda belum mengisi absensi untuk jam pelajaran ini.'),
-        const SizedBox(height: 12),
-        FilledButton.icon(
-          icon: const Icon(Icons.how_to_reg_outlined),
-          label: const Text('Absen Sekarang'),
-          onPressed: _absen,
-        ),
-      ];
+    const Text(
+      'Anda belum mengisi absensi untuk jam pelajaran ini.',
+      style: TextStyle(fontSize: 13, color: AppColors.inkMuted),
+    ),
+    const SizedBox(height: 12),
+    FilledButton.icon(
+      icon: const Icon(Icons.how_to_reg_outlined),
+      label: const Text('Absen Sekarang'),
+      onPressed: _absen,
+    ),
+  ];
 
   List<Widget> _isiAbsensi(Jadwal j, ThemeData theme) => [
-        Row(children: [
-          Text(j.hadir ? 'Hadir' : 'Tidak hadir', style: theme.textTheme.titleMedium),
-          const Spacer(),
-          StatusBadge(j.statusKelas),
-        ]),
-        if (j.infoWaktu.isNotEmpty) Text(j.infoWaktu, style: theme.textTheme.bodySmall),
-        if (j.beritaAcara != null) ...[
-          const SizedBox(height: 12),
-          const Text('Berita acara', style: TextStyle(fontWeight: FontWeight.w600)),
-          Text(j.beritaAcara!),
-        ],
-        if (j.keterangan != null) ...[
-          const SizedBox(height: 12),
-          const Text('Keterangan tidak hadir', style: TextStyle(fontWeight: FontWeight.w600)),
-          Text(j.keterangan!),
-        ],
-        if (j.guruPengganti != null) ...[
-          const SizedBox(height: 12),
-          Text('Guru pengganti: ${j.guruPengganti}'),
-        ],
-        const SizedBox(height: 12),
-        OutlinedButton.icon(
-          icon: const Icon(Icons.edit_outlined),
-          label: const Text('Ubah Absensi'),
-          onPressed: _absen,
+    Row(
+      children: [
+        Text(
+          j.hadir ? 'Hadir' : 'Tidak hadir',
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink),
         ),
-      ];
+        const Spacer(),
+        StatusBadge(j.statusKelas),
+      ],
+    ),
+    if (j.infoWaktu.isNotEmpty) Text(j.infoWaktu, style: theme.textTheme.bodySmall?.copyWith(fontSize: 11)),
+    if (j.beritaAcara != null) ...[
+      const SizedBox(height: 12),
+      const _Label('Berita acara'),
+      Text(j.beritaAcara!, style: const TextStyle(fontSize: 13)),
+    ],
+    if (j.keterangan != null) ...[
+      const SizedBox(height: 12),
+      const _Label('Keterangan tidak hadir'),
+      Text(j.keterangan!, style: const TextStyle(fontSize: 13)),
+    ],
+    if (j.guruPengganti != null) ...[
+      const SizedBox(height: 12),
+      Text('Guru pengganti: ${j.guruPengganti}', style: const TextStyle(fontSize: 13)),
+    ],
+    const SizedBox(height: 14),
+    OutlinedButton.icon(icon: const Icon(Icons.edit_outlined), label: const Text('Ubah Absensi'), onPressed: _absen),
+  ];
+}
+
+class _Label extends StatelessWidget {
+  const _Label(this.teks);
+
+  final String teks;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 2),
+    child: Text(
+      teks,
+      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.ink),
+    ),
+  );
 }
 
 /// Jumlah siswa per status, mis. "Hadir 8 · Sakit 1 · Belum diabsen 1".
@@ -171,8 +195,9 @@ class _Ringkasan extends StatelessWidget {
       runSpacing: 8,
       children: [
         for (final st in urutan)
-          if (daftar.jumlah(st) > 0) Chip(label: Text('${StatusBadge.labelOf(st)} ${daftar.jumlah(st)}')),
-        if (daftar.belumDiabsen > 0) Chip(label: Text('Belum diabsen ${daftar.belumDiabsen}')),
+          if (daftar.jumlah(st) > 0)
+            StatusPill(label: '${StatusBadge.labelOf(st)} ${daftar.jumlah(st)}', gaya: StatusBadge.gayaOf(st)),
+        if (daftar.belumDiabsen > 0) StatusPill(label: 'Belum diabsen ${daftar.belumDiabsen}', gaya: GayaChip.putih),
       ],
     );
   }
@@ -195,15 +220,19 @@ class _SiswaTile extends StatelessWidget {
 
     return ListTile(
       onTap: onTap,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
       title: Text(siswa.nama),
       subtitle: Text(baris.join(' · '), style: kecil),
-      trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-        if (siswa.catatan.isNotEmpty) const Icon(Icons.sticky_note_2_outlined, size: 18, color: AppColors.info),
-        const SizedBox(width: 6),
-        siswa.status == null
-            ? Text('Belum diabsen', style: kecil?.copyWith(color: AppColors.textSecondary))
-            : StatusBadge(siswa.status!),
-      ]),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (siswa.catatan.isNotEmpty) const Icon(Icons.sticky_note_2_outlined, size: 18, color: AppColors.inkMuted),
+          const SizedBox(width: 6),
+          siswa.status == null
+              ? Text('Belum diabsen', style: kecil?.copyWith(color: AppColors.textSecondary))
+              : StatusBadge(siswa.status!),
+        ],
+      ),
     );
   }
 }
