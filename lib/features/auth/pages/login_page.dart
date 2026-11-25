@@ -42,7 +42,8 @@ class _LoginPageState extends State<LoginPage> {
     final error = context.watch<AuthProvider>().errorMessage;
 
     return Scaffold(
-      backgroundColor: AppColors.pink,
+      // Transparan: latar pink + hiasan dari LatarHias.
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(

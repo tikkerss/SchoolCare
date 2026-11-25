@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:schoolcare/core/theme/app_colors.dart';
 import 'package:schoolcare/features/orang_tua/data/ortu_models.dart';
@@ -6,6 +7,8 @@ import 'package:schoolcare/features/orang_tua/pages/form_izin_page.dart';
 import 'package:schoolcare/features/orang_tua/widgets/ortu_ui.dart';
 import 'package:schoolcare/shared/widgets/dashed.dart';
 import 'package:schoolcare/shared/widgets/emotikon_kehadiran.dart';
+import 'package:schoolcare/shared/widgets/gemes.dart';
+import 'package:schoolcare/shared/widgets/permukaan.dart';
 import 'package:schoolcare/shared/widgets/status_badge.dart';
 import 'package:schoolcare/shared/widgets/ticket_card.dart';
 
@@ -267,81 +270,81 @@ class _KehadiranTabState extends State<KehadiranTab> {
 
   // ------------------------------------------------------ detail hari terpilih
   Widget _detail(DateTime tgl, AbsensiHarian? a) {
-    return SoftCard(
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          Expanded(
-            child: Text(OrtuFmt.hari(tgl), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
-          ),
-          if (a != null) StatusChip(a.status),
-        ]),
-        if (a == null)
-          const Padding(
-            padding: EdgeInsets.only(top: 6),
-            child: Text('Belum ada data kehadiran.', style: TextStyle(fontSize: 12, color: AppColors.inkMuted)),
-          )
-        else ...[
-          if (a.keterangan != null)
+    final ketKosong = Permukaan.diPutih(context) ? AppColors.inkMuted : AppColors.white;
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      SoftCard(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Expanded(
+              child: Text(OrtuFmt.hari(tgl), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+            ),
+            if (a != null) StatusChip(a.status),
+          ]),
+          if (a == null)
+            const Padding(
+              padding: EdgeInsets.only(top: 6),
+              child: Text('Belum ada data kehadiran.', style: TextStyle(fontSize: 12, color: AppColors.inkMuted)),
+            )
+          else if (a.keterangan != null)
             Padding(
               padding: const EdgeInsets.only(top: 6),
               child: Text(a.keterangan!, style: const TextStyle(fontSize: 12)),
             ),
-          const SizedBox(height: 12),
-          const Text('Riwayat perubahan', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 6),
-          FutureBuilder<List<RiwayatStatus>>(
-            future: _riwayatUntuk(a),
-            builder: (context, snap) {
-              if (snap.connectionState != ConnectionState.done) {
-                return const SizedBox(height: 60, child: MemuatView());
-              }
-              if (snap.hasError) return const SizedBox(height: 100, child: GagalView());
-              final list = snap.data!;
-              if (list.isEmpty) {
-                return const Text('Belum ada riwayat.', style: TextStyle(fontSize: 12, color: AppColors.inkMuted));
-              }
-              return Column(children: [for (final r in list) _barisRiwayat(r)]);
-            },
-          ),
-        ],
-      ]),
-    );
+        ]),
+      ),
+      // Riwayat perubahan: balon chat putih langsung di atas latar pink.
+      if (a != null) ...[
+        const JudulBagian('Riwayat perubahan'),
+        FutureBuilder<List<RiwayatStatus>>(
+          future: _riwayatUntuk(a),
+          builder: (context, snap) {
+            if (snap.connectionState != ConnectionState.done) {
+              return const SizedBox(height: 60, child: MemuatView());
+            }
+            if (snap.hasError) return const SizedBox(height: 100, child: GagalView());
+            final list = snap.data!;
+            if (list.isEmpty) {
+              return Text('Belum ada riwayat.', style: TextStyle(fontSize: 12, color: ketKosong));
+            }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [for (final r in list) _barisRiwayat(r)],
+            );
+          },
+        ),
+      ],
+    ]);
   }
 
+  /// Satu perubahan status sebagai balon chat + label nama guru ("Bu Sri · 07.05").
   Widget _barisRiwayat(RiwayatStatus r) {
-    final ket = [
-      if (r.keterangan != null) r.keterangan!,
-      if (r.oleh != null) 'oleh ${r.oleh}',
-    ].join(' · ');
+    final jam = DateFormat('HH.mm').format(r.waktu);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        SizedBox(
-          width: 48,
-          child: Text(OrtuFmt.jamMenit(r.waktu), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
-        ),
-        Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 6,
-              runSpacing: 4,
-              children: [
-                if (r.statusLama != null) ...[
-                  StatusChip(r.statusLama!),
-                  const Icon(Icons.arrow_forward, size: 14, color: AppColors.inkMuted),
-                ],
-                StatusChip(r.statusBaru),
+      padding: const EdgeInsets.only(bottom: 4),
+      child: BalonChat(
+        label: '${r.oleh ?? 'Sistem'} · $jam',
+        warnaLabel: AppColors.pink,
+        padding: const EdgeInsets.fromLTRB(14, 18, 14, 12),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 6,
+            runSpacing: 4,
+            children: [
+              if (r.statusLama != null) ...[
+                StatusChip(r.statusLama!),
+                const Icon(Icons.arrow_forward, size: 14, color: AppColors.inkMuted),
               ],
+              StatusChip(r.statusBaru),
+            ],
+          ),
+          if (r.keterangan != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(r.keterangan!, style: const TextStyle(fontSize: 12, color: AppColors.ink)),
             ),
-            if (ket.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Text(ket, style: const TextStyle(fontSize: 11, color: AppColors.inkMuted)),
-              ),
-          ]),
-        ),
-      ]),
+        ]),
+      ),
     );
   }
 }

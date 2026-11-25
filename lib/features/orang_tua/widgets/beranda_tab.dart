@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:schoolcare/core/theme/app_colors.dart';
 import 'package:schoolcare/features/orang_tua/data/ortu_models.dart';
@@ -9,6 +10,7 @@ import 'package:schoolcare/features/orang_tua/pages/form_izin_page.dart';
 import 'package:schoolcare/features/orang_tua/pages/kontak_guru_page.dart';
 import 'package:schoolcare/features/orang_tua/widgets/ortu_ui.dart';
 import 'package:schoolcare/shared/widgets/emotikon_kehadiran.dart';
+import 'package:schoolcare/shared/widgets/gemes.dart';
 import 'package:schoolcare/shared/widgets/status_badge.dart';
 import 'package:schoolcare/shared/widgets/ticket_card.dart';
 
@@ -39,6 +41,9 @@ class BerandaTab extends StatefulWidget {
 class _BerandaTabState extends State<BerandaTab> {
   final _repo = OrtuRepository();
   late Future<_DataBeranda> _future = _muat();
+
+  /// Absensi bulan ini, hanya untuk progress bar "Kehadiran (bulan)".
+  late Future<List<AbsensiHarian>> _bulanIni = _muatBulan();
   late final VoidCallback _berhentiPantau;
 
   @override
@@ -66,7 +71,12 @@ class _BerandaTabState extends State<BerandaTab> {
     ).wait;
   }
 
-  void _muatUlang() => setState(() => _future = _muat());
+  Future<List<AbsensiHarian>> _muatBulan() => _repo.getAbsensiBulan(widget.anak.siswaId, DateTime.now());
+
+  void _muatUlang() => setState(() {
+        _future = _muat();
+        _bulanIni = _muatBulan();
+      });
 
   void _buka(Widget halaman) => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => halaman));
 
@@ -99,68 +109,67 @@ class _BerandaTabState extends State<BerandaTab> {
           final sekarang = berlangsung.isEmpty ? null : berlangsung.first;
 
           return ListView(padding: const EdgeInsets.fromLTRB(20, 16, 20, 24), children: [
-            // ---- judul + maskot Tasi kecil di samping
-            Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-              Expanded(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text.rich(
-                    TextSpan(children: [
-                      const TextSpan(text: 'Hari ini, '),
-                      // Nama anak disorot softYellow (pink tidak terbaca di atas latar pink).
-                      TextSpan(text: _namaDepan(anak.nama), style: const TextStyle(color: AppColors.softYellow)),
-                      const TextSpan(text: ' di sekolah'),
-                    ]),
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.white,
-                      height: 1.25,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 6,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      Text(OrtuFmt.hari(DateTime.now()), style: _ketDiPink),
-                      if (widget.pemilihAnak != null) widget.pemilihAnak!,
-                    ],
-                  ),
+            // ---- judul (Tasi cukup yang mengintip di kartu kehadiran)
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text.rich(
+                TextSpan(children: [
+                  const TextSpan(text: 'Hari ini, '),
+                  // Nama anak disorot softYellow (pink tidak terbaca di atas latar pink).
+                  TextSpan(text: _namaDepan(anak.nama), style: const TextStyle(color: AppColors.softYellow)),
+                  const TextSpan(text: ' di sekolah'),
                 ]),
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.white,
+                  height: 1.25,
+                ),
               ),
-              const SizedBox(width: 8),
-              const IgnorePointer(child: MaskotTasi(size: 104)),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 8,
+                runSpacing: 6,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(OrtuFmt.hari(DateTime.now()), style: _ketDiPink),
+                  if (widget.pemilihAnak != null) widget.pemilihAnak!,
+                ],
+              ),
             ]),
             const SizedBox(height: 16),
 
-            // ---- Kehadiran hari ini
-            SoftCard(
-              warna: AppColors.softYellow,
+            // ---- Kehadiran hari ini: balon chat + label, pojok tergigit, Tasi ngintip
+            BalonChat(
+              label: absen == null ? null : 'Wali kelas · ${DateFormat('HH.mm').format(absen.diperbarui)}',
+              gigitan: true,
+              intip: const MaskotTasi(size: 112),
               onTap: widget.onLihatKehadiran,
+              // kanan dilonggarkan untuk kepala Tasi yang mengintip
+              padding: const EdgeInsets.fromLTRB(16, 20, 104, 18),
               child: Row(children: [
                 EmotikonKehadiran(absen?.status, size: 64),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    const Text('Kehadiran hari ini', style: _labelMuda),
+                    const Text('Kehadiran hari ini', style: TextStyle(fontSize: 11, color: AppColors.inkMuted)),
                     const SizedBox(height: 2),
                     Text(
                       absen == null ? 'Belum diabsen' : StatusBadge.labelOf(absen.status),
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.black),
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.ink),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       absen == null
                           ? 'Wali kelas belum mengisi absensi pagi'
                           : absen.keterangan ?? 'Diperbarui ${OrtuFmt.jamMenit(absen.diperbarui)}',
-                      style: _ketMuda,
+                      style: _ket,
                     ),
                   ]),
                 ),
-                const Icon(Icons.chevron_right, color: AppColors.black),
               ]),
             ),
+            const SizedBox(height: 12),
+            _ProgressBulan(future: _bulanIni),
 
             // ---- Pelajaran sekarang
             const JudulBagian('Sekarang'),
@@ -204,22 +213,21 @@ class _BerandaTabState extends State<BerandaTab> {
 
             // ---- Menu
             const JudulBagian('Menu'),
-            SoftCard(
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-              // Row (bukan GridView rasio tetap) supaya tinggi mengikuti isi dan tidak overflow
-              // saat label 2 baris / ukuran teks diperbesar.
-              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            // Menu glossy langsung di atas latar pink (label putih).
+            // Row (bukan GridView rasio tetap) supaya tinggi mengikuti isi dan tidak overflow
+            // saat label 2 baris / ukuran teks diperbesar.
+            Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 for (final m in <Widget>[
                     MenuKotak(
                       ikon: Icons.edit_note,
                       label: 'Izin / Sakit',
-                      warna: AppColors.pink,
+                      warna: AppColors.orange,
                       onTap: () => _buka(FormIzinPage(anak: anak)),
                     ),
                     MenuKotak(
                       ikon: Icons.timeline,
                       label: 'Aktivitas',
-                      warna: AppColors.orange,
+                      warna: AppColors.softYellow,
                       onTap: () => _buka(AktivitasHarianPage(anak: anak)),
                     ),
                     MenuKotak(
@@ -231,22 +239,20 @@ class _BerandaTabState extends State<BerandaTab> {
                     MenuKotak(
                       ikon: Icons.chat_outlined,
                       label: 'Chat Guru',
-                      warna: AppColors.softYellow,
+                      warna: AppColors.white,
                       onTap: () => _buka(KontakGuruPage(anak: anak)),
                     ),
                 ])
                   Expanded(child: m),
-              ]),
-            ),
+            ]),
 
             // ---- Pengumuman terbaru
             const JudulBagian('Pengumuman'),
             if (pengumuman.isEmpty) const Text('Belum ada pengumuman.', style: _ketDiPink),
             for (final p in pengumuman)
               Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: SoftCard(
-                  warna: AppColors.softYellow,
+                padding: const EdgeInsets.only(bottom: 12),
+                child: KertasTempel(
                   onTap: () => _detailPengumuman(p),
                   child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     const Icon(Icons.campaign_outlined, color: AppColors.black),
@@ -283,5 +289,42 @@ class _BerandaTabState extends State<BerandaTab> {
             Text(p.isi, style: const TextStyle(fontSize: 13)),
           ],
         ),
+      );
+}
+
+/// Progress bar bergaris "Kehadiran (bulan)  hadir/tercatat hari".
+/// Hadir = status hadir atau terlambat; tercatat = hari yang sudah diabsen bulan ini.
+class _ProgressBulan extends StatelessWidget {
+  const _ProgressBulan({required this.future});
+
+  final Future<List<AbsensiHarian>> future;
+
+  @override
+  Widget build(BuildContext context) => FutureBuilder<List<AbsensiHarian>>(
+        future: future,
+        builder: (context, snap) {
+          final list = snap.data;
+          if (list == null || list.isEmpty) return const SizedBox.shrink();
+          final hadir = list.where((a) => a.status == 'hadir' || a.status == 'terlambat').length;
+          return SoftCard(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              Row(children: [
+                Expanded(
+                  child: Text(
+                    'Kehadiran ${DateFormat('MMMM', 'id_ID').format(DateTime.now())}',
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                  ),
+                ),
+                Text(
+                  '$hadir/${list.length} hari',
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.pink),
+                ),
+              ]),
+              const SizedBox(height: 8),
+              ProgressBergaris(nilai: hadir / list.length),
+            ]),
+          );
+        },
       );
 }

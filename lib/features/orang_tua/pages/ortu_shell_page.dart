@@ -95,7 +95,7 @@ class _OrtuShellPageState extends State<OrtuShellPage> {
         index: _index,
         onTap: (i) => setState(() => _index = i),
         items: const [
-          AppBottomNavItem(ikon: Icons.home_rounded, label: 'Beranda'),
+          AppBottomNavItem(ikon: Icons.home_outlined, label: 'Beranda'),
           AppBottomNavItem(ikon: Icons.fact_check_outlined, label: 'Kehadiran'),
           AppBottomNavItem(ikon: Icons.menu_book_outlined, label: 'Akademik'),
           AppBottomNavItem(ikon: Icons.person_outline, label: 'Profil'),

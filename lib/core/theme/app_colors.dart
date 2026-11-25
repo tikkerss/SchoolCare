@@ -46,6 +46,21 @@ class AppColors {
     return ink;
   }
 
+  // ------------------------------------------------ transparan (hiasan/efek)
+  /// Lingkaran hiasan latar: softPink 16% dan softYellow 14%.
+  static const hiasSoftPink = Color(0x29FFD1DF);
+  static const hiasSoftYellow = Color(0x24FFE9A6);
+
+  /// Kilau tombol glossy (putih 38%) dan bayangan dalam (hitam 16%).
+  static const kilau = Color(0x61FFFFFF);
+  static const bayanganDalam = Color(0x29000000);
+
+  /// Garis miring progress bar (putih 28%).
+  static const garisProgress = Color(0x47FFFFFF);
+
+  /// Selotip kertas tempel (pink transparan 45%).
+  static const selotip = Color(0x73D63F75);
+
   // ------------------------------------------------------------- efek
   /// Bayangan lembut untuk semua frame putih.
   static const cardShadow = [BoxShadow(color: Color(0x383A1426), blurRadius: 16, offset: Offset(0, 6))];

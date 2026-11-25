@@ -1,9 +1,8 @@
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:schoolcare/core/theme/app_colors.dart';
 
 /// Emotikon kehadiran siswa: hadir · terlambat · izin · sakit · alpa.
-/// Status lain (mis. belum diabsen) tampil sebagai lingkaran kosong bergaris softPink.
+/// Status lain (mis. belum diabsen) tampil sebagai emotikon netral bergaris putus-putus pink.
 class EmotikonKehadiran extends StatelessWidget {
   const EmotikonKehadiran(this.status, {super.key, this.size = 40});
 
@@ -16,13 +15,12 @@ class EmotikonKehadiran extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = status;
     if (s == null || !_dikenal.contains(s)) {
-      return Container(
+      // Belum diabsen: emotikon netral (softYellow, garis putus pink, mata titik, mulut datar).
+      return SvgPicture.asset(
+        'assets/emotikon/emo_belum.svg',
         width: size,
         height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: AppColors.softPink, width: 1.5),
-        ),
+        semanticsLabel: 'Belum diabsen',
       );
     }
     return SvgPicture.asset('assets/emotikon/emo_$s.svg', width: size, height: size);

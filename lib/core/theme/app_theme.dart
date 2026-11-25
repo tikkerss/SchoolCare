@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:schoolcare/core/theme/app_colors.dart';
+import 'package:schoolcare/shared/widgets/latar_hias.dart';
 
 class AppTheme {
   AppTheme._();
@@ -75,8 +76,19 @@ class AppTheme {
         surfaceContainerHigh: AppColors.white,
         surfaceContainerHighest: AppColors.white,
       ),
-      // Semua halaman berlatar pink polos; konten di kartu putih.
-      scaffoldBackgroundColor: AppColors.pink,
+      // Semua halaman berlatar pink + 2 lingkaran hiasan (LatarHias, dipasang lewat
+      // pageTransitionsTheme di bawah), jadi Scaffold sendiri transparan. Konten di kartu putih.
+      scaffoldBackgroundColor: Colors.transparent,
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: LatarHiasTransitionsBuilder(),
+          TargetPlatform.iOS: LatarHiasTransitionsBuilder(),
+          TargetPlatform.macOS: LatarHiasTransitionsBuilder(),
+          TargetPlatform.windows: LatarHiasTransitionsBuilder(),
+          TargetPlatform.linux: LatarHiasTransitionsBuilder(),
+          TargetPlatform.fuchsia: LatarHiasTransitionsBuilder(),
+        },
+      ),
       canvasColor: AppColors.white,
       textTheme: text,
       primaryTextTheme: text,

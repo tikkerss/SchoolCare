@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:schoolcare/core/theme/app_colors.dart';
+import 'package:schoolcare/shared/widgets/gemes.dart';
 import 'package:schoolcare/shared/widgets/permukaan.dart';
 import 'package:schoolcare/shared/widgets/status_badge.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -169,7 +170,7 @@ class MenuKotak extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
-  /// Warna kotak ikon: pink · orange · softPink · softYellow.
+  /// Warna kotak ikon (glossy): orange · softYellow · softPink · white.
   final Color warna;
 
   @override
@@ -180,12 +181,7 @@ class MenuKotak extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(color: warna, borderRadius: BorderRadius.circular(16)),
-            child: Icon(ikon, color: AppColors.teksDi(warna), size: 26),
-          ),
+          KotakGlossy(warna: warna, child: Icon(ikon, color: AppColors.teksDi(warna), size: 26)),
           const SizedBox(height: 6),
           Text(
             label,
