@@ -4,6 +4,7 @@ import 'package:schoolcare/features/orang_tua/data/ortu_models.dart';
 import 'package:schoolcare/features/orang_tua/data/ortu_repository.dart';
 import 'package:schoolcare/features/orang_tua/pages/form_izin_page.dart';
 import 'package:schoolcare/features/orang_tua/widgets/ortu_ui.dart';
+import 'package:schoolcare/shared/widgets/dashed.dart';
 import 'package:schoolcare/shared/widgets/emotikon_kehadiran.dart';
 import 'package:schoolcare/shared/widgets/status_badge.dart';
 import 'package:schoolcare/shared/widgets/ticket_card.dart';
@@ -136,9 +137,9 @@ class _KehadiranTabState extends State<KehadiranTab> {
         top: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-          // Tombol putih bertulisan pink karena langsung di atas latar pink.
+          // Tombol langsung di atas latar pink: softYellow, teks ink Bold.
           child: FilledButton.icon(
-            style: FilledButton.styleFrom(backgroundColor: AppColors.white, foregroundColor: AppColors.pink),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.softYellow, foregroundColor: AppColors.ink),
             icon: const Icon(Icons.edit_note),
             label: const Text('Ajukan izin / sakit'),
             onPressed: () => Navigator.of(context).push(
@@ -207,7 +208,7 @@ class _KehadiranTabState extends State<KehadiranTab> {
               for (final tgl in w)
                 Expanded(
                   child: tgl == null
-                      ? const SizedBox(height: 52)
+                      ? const SizedBox(height: 54)
                       : _selHari(tgl, perTanggal[tgl], belumLewat: tgl.isAfter(hariIni)),
                 ),
             ]),
@@ -224,34 +225,36 @@ class _KehadiranTabState extends State<KehadiranTab> {
     if (a != null) {
       isi = EmotikonKehadiran(a.status, size: ukuran);
     } else {
-      isi = Container(
+      final angka = SizedBox(
         width: ukuran,
         height: ukuran,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: belumLewat ? Border.all(color: AppColors.softPink, width: 1.5) : null,
-        ),
-        child: Text(
-          '${tgl.day}',
-          style: TextStyle(fontSize: 12, color: belumLewat ? AppColors.inkFaint : AppColors.ink),
+        child: Center(
+          child: Text(
+            '${tgl.day}',
+            style: TextStyle(fontSize: 12, color: belumLewat ? AppColors.inkMuted : AppColors.ink),
+          ),
         ),
       );
+      // Hari yang belum lewat: lingkaran transparan bergaris putus-putus pink.
+      isi = belumLewat
+          ? DashedOutline(color: AppColors.pink, radius: ukuran / 2, child: angka)
+          : angka;
     }
 
     return InkResponse(
       onTap: () => setState(() => _terpilih = tgl),
       radius: 26,
-      // Tinggi minimal 52 (bukan tinggi tetap): isi sel = cincin 42 + angka ±11, jadi
-      // SizedBox(height: 52) dulu overflow ±1 px (lebih besar lagi kalau teks diperbesar).
+      // Tinggi minimal 54 (bukan tinggi tetap): isi sel = cincin 43 + angka ±11.
+      // Tinggi tetap dulu overflow ±1 px (lebih besar lagi kalau teks diperbesar).
       child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: 52),
+        constraints: const BoxConstraints(minHeight: 54),
         child: Column(mainAxisSize: MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.center, children: [
           Container(
             padding: const EdgeInsets.all(2),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: dipilih ? AppColors.pink : Colors.transparent, width: 2),
+              // Tanggal terpilih: cincin pink 2.5px.
+              border: Border.all(color: dipilih ? AppColors.pink : Colors.transparent, width: 2.5),
             ),
             child: isi,
           ),

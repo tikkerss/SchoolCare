@@ -54,9 +54,9 @@ class AppTheme {
         primary: AppColors.pink,
         onPrimary: AppColors.white,
         secondary: AppColors.orange,
-        onSecondary: AppColors.ink,
+        onSecondary: AppColors.white,
         tertiary: AppColors.softYellow,
-        onTertiary: AppColors.ink,
+        onTertiary: AppColors.black,
         error: AppColors.pink,
         onError: AppColors.white,
         surface: AppColors.white,
@@ -65,9 +65,9 @@ class AppTheme {
         outline: AppColors.softPink,
         outlineVariant: AppColors.softPink,
         primaryContainer: AppColors.softPink,
-        onPrimaryContainer: AppColors.ink,
+        onPrimaryContainer: AppColors.black,
         secondaryContainer: AppColors.softYellow,
-        onSecondaryContainer: AppColors.ink,
+        onSecondaryContainer: AppColors.black,
         surfaceTint: Colors.transparent,
         surfaceContainerLowest: AppColors.white,
         surfaceContainerLow: AppColors.white,
@@ -103,8 +103,8 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: AppColors.white,
-        elevation: 2,
-        shadowColor: const Color(0x33000000),
+        elevation: 6,
+        shadowColor: const Color(0x383A1426),
         surfaceTintColor: Colors.transparent,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -150,7 +150,8 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.orange,
-          foregroundColor: AppColors.ink,
+          foregroundColor: AppColors.white,
+          iconColor: AppColors.white,
           elevation: 0,
           minimumSize: const Size.fromHeight(52),
           shape: buttonShape,
@@ -175,16 +176,17 @@ class AppTheme {
       // Orange (aksi kedua) supaya tetap terlihat di atas latar pink maupun kartu putih.
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: AppColors.orange,
-        foregroundColor: AppColors.ink,
+        foregroundColor: AppColors.white,
       ),
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.white,
         // softPink (bukan pink) supaya label ink tetap terbaca saat chip terpilih.
         selectedColor: AppColors.softPink,
-        checkmarkColor: AppColors.ink,
+        checkmarkColor: AppColors.black,
         side: const BorderSide(color: AppColors.softPink),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         labelStyle: text.labelMedium?.copyWith(color: AppColors.ink),
+        secondaryLabelStyle: text.labelMedium?.copyWith(color: AppColors.black, fontWeight: _bold),
       ),
       segmentedButtonTheme: SegmentedButtonThemeData(
         style: SegmentedButton.styleFrom(

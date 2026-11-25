@@ -225,7 +225,10 @@ class _TugasDetailPageState extends State<TugasDetailPage> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(color: AppColors.softYellow, borderRadius: BorderRadius.circular(16)),
-                child: Text(t.deskripsi!, style: const TextStyle(fontSize: 13)),
+                child: Text(
+                  t.deskripsi!,
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.black),
+                ),
               ),
             ],
             SectionHeader(_siswa == null ? 'Penilaian' : 'Penilaian ($_jumlahTerisi/${_siswa!.length} dinilai)'),

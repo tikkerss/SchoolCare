@@ -82,10 +82,11 @@ class ProfilPage extends StatelessWidget {
             ),
           ),
           OutlinedButton.icon(
-            // Di atas latar pink: teks & garis putih.
+            // Tombol langsung di atas latar pink: softYellow, teks ink Bold.
             style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.white,
-              side: const BorderSide(color: AppColors.white, width: 1.5),
+              backgroundColor: AppColors.softYellow,
+              foregroundColor: AppColors.ink,
+              side: BorderSide.none,
             ),
             icon: const Icon(Icons.logout),
             label: const Text('Keluar'),

@@ -258,7 +258,10 @@ class _KartuAktivitasState extends State<_KartuAktivitas> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(color: AppColors.softYellow, borderRadius: BorderRadius.circular(8)),
-            child: Text(a.infoKegiatan!, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+            child: Text(
+              a.infoKegiatan!,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.black),
+            ),
           ),
         ],
         if (adaDetail) ...[
@@ -306,7 +309,7 @@ class _FotoBukti extends StatelessWidget {
         errorBuilder: (_, _, _) => Container(
           height: tinggi ?? 160,
           color: AppColors.softPink,
-          child: const Center(child: Icon(Icons.broken_image_outlined)),
+          child: const Center(child: Icon(Icons.broken_image_outlined, color: AppColors.black)),
         ),
       );
 

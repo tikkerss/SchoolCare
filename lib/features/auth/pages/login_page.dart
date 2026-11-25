@@ -154,12 +154,12 @@ class _LoginPageState extends State<LoginPage> {
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(color: AppColors.softYellow, borderRadius: BorderRadius.circular(16)),
                 child: const Row(children: [
-                  Icon(Icons.info_outline, color: AppColors.ink, size: 20),
+                  Icon(Icons.info_outline, color: AppColors.black, size: 20),
                   SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       'Belum punya akun atau lupa sandi? Hubungi Manajemen Sekolah.',
-                      style: TextStyle(fontSize: 12, color: AppColors.ink, height: 1.4),
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.black, height: 1.4),
                     ),
                   ),
                 ]),

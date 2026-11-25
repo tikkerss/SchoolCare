@@ -174,7 +174,6 @@ class MenuKotak extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ikonPutih = warna == AppColors.pink;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -185,7 +184,7 @@ class MenuKotak extends StatelessWidget {
             width: 56,
             height: 56,
             decoration: BoxDecoration(color: warna, borderRadius: BorderRadius.circular(16)),
-            child: Icon(ikon, color: ikonPutih ? AppColors.white : AppColors.ink, size: 26),
+            child: Icon(ikon, color: AppColors.teksDi(warna), size: 26),
           ),
           const SizedBox(height: 6),
           Text(

@@ -360,9 +360,18 @@ class _RaporDetailPageState extends State<RaporDetailPage> {
       ),
       child: Row(
         children: [
-          Icon(ikon, color: AppColors.ink),
+          Icon(ikon, color: AppColors.teksDi(warna)),
           const SizedBox(width: 12),
-          Expanded(child: Text(teks)),
+          Expanded(
+            child: Text(
+              teks,
+              style: TextStyle(
+                fontSize: 13,
+                color: AppColors.teksDi(warna),
+                fontWeight: AppColors.latarMuda(warna) ? FontWeight.w700 : FontWeight.w400,
+              ),
+            ),
+          ),
         ],
       ),
     );

@@ -86,7 +86,7 @@ class WaliKelasHomePage extends StatelessWidget {
                       ),
                       child: Icon(
                         ikon,
-                        color: i % _warnaIkon.length == 0 ? AppColors.white : AppColors.ink,
+                        color: AppColors.teksDi(_warnaIkon[i % _warnaIkon.length]),
                       ),
                     ),
                     const SizedBox(width: 12),

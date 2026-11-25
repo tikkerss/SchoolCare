@@ -112,11 +112,12 @@ class _AkademikTabState extends State<AkademikTab> {
           return SoftCard(
             padding: const EdgeInsets.all(10),
             child: Row(children: [
-              Expanded(child: _KotakStat(nilai: rata, label: 'Rata-rata', warna: AppColors.pink)),
+              // Urutan FINAL: orange · softPink · orange.
+              Expanded(child: _KotakStat(nilai: rata, label: 'Rata-rata', warna: AppColors.orange)),
               const SizedBox(width: 8),
-              Expanded(child: _KotakStat(nilai: tugas, label: 'Tugas aktif', warna: AppColors.orange)),
+              Expanded(child: _KotakStat(nilai: tugas, label: 'Tugas aktif', warna: AppColors.softPink)),
               const SizedBox(width: 8),
-              Expanded(child: _KotakStat(nilai: ujian, label: 'Ujian dekat', warna: AppColors.softYellow)),
+              Expanded(child: _KotakStat(nilai: ujian, label: 'Ujian dekat', warna: AppColors.orange)),
             ]),
           );
         },
@@ -294,18 +295,23 @@ class _KotakStat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final teks = warna == AppColors.pink ? AppColors.white : AppColors.ink;
+    final teks = AppColors.teksDi(warna);
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
       decoration: BoxDecoration(color: warna, borderRadius: BorderRadius.circular(16)),
-      child: Column(children: [
-        Text(nilai, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: teks)),
+      // Rata tengah: label di atas, angka besar di bawah.
+      child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
         Text(
           label,
           textAlign: TextAlign.center,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: TextStyle(fontSize: 11, color: teks),
+          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: teks),
+        ),
+        Text(
+          nilai,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: teks),
         ),
       ]),
     );
@@ -321,7 +327,7 @@ class _BadgeMapel extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         decoration: BoxDecoration(color: AppColors.softPink, borderRadius: BorderRadius.circular(8)),
-        child: Text(mapel, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.ink)),
+        child: Text(mapel, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.black)),
       );
 }
 

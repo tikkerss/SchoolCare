@@ -77,6 +77,10 @@ class _BerandaTabState extends State<BerandaTab> {
   static const _ketDiPink = TextStyle(fontSize: 12, color: AppColors.white);
   static const _judulKartu = TextStyle(fontSize: 14, fontWeight: FontWeight.w700);
 
+  // Teks di atas kotak softYellow/softPink: hitam bold.
+  static const _labelMuda = TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.black);
+  static const _ketMuda = TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.black);
+
   @override
   Widget build(BuildContext context) {
     final anak = widget.anak;
@@ -95,26 +99,39 @@ class _BerandaTabState extends State<BerandaTab> {
           final sekarang = berlangsung.isEmpty ? null : berlangsung.first;
 
           return ListView(padding: const EdgeInsets.fromLTRB(20, 16, 20, 24), children: [
-            // ---- judul
-            Text.rich(
-              TextSpan(children: [
-                const TextSpan(text: 'Hari ini, '),
-                // Nama anak disorot softYellow (pink tidak terbaca di atas latar pink).
-                TextSpan(text: _namaDepan(anak.nama), style: const TextStyle(color: AppColors.softYellow)),
-                const TextSpan(text: ' di sekolah'),
-              ]),
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.white, height: 1.25),
-            ),
-            const SizedBox(height: 6),
-            Wrap(
-              spacing: 8,
-              runSpacing: 6,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Text(OrtuFmt.hari(DateTime.now()), style: _ketDiPink),
-                if (widget.pemilihAnak != null) widget.pemilihAnak!,
-              ],
-            ),
+            // ---- judul + maskot Tasi kecil di samping
+            Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+              Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text.rich(
+                    TextSpan(children: [
+                      const TextSpan(text: 'Hari ini, '),
+                      // Nama anak disorot softYellow (pink tidak terbaca di atas latar pink).
+                      TextSpan(text: _namaDepan(anak.nama), style: const TextStyle(color: AppColors.softYellow)),
+                      const TextSpan(text: ' di sekolah'),
+                    ]),
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.white,
+                      height: 1.25,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 6,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Text(OrtuFmt.hari(DateTime.now()), style: _ketDiPink),
+                      if (widget.pemilihAnak != null) widget.pemilihAnak!,
+                    ],
+                  ),
+                ]),
+              ),
+              const SizedBox(width: 8),
+              const IgnorePointer(child: MaskotTasi(size: 104)),
+            ]),
             const SizedBox(height: 16),
 
             // ---- Kehadiran hari ini
@@ -126,22 +143,22 @@ class _BerandaTabState extends State<BerandaTab> {
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    const Text('Kehadiran hari ini', style: TextStyle(fontSize: 11, color: AppColors.inkMuted)),
+                    const Text('Kehadiran hari ini', style: _labelMuda),
                     const SizedBox(height: 2),
                     Text(
                       absen == null ? 'Belum diabsen' : StatusBadge.labelOf(absen.status),
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.black),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       absen == null
                           ? 'Wali kelas belum mengisi absensi pagi'
                           : absen.keterangan ?? 'Diperbarui ${OrtuFmt.jamMenit(absen.diperbarui)}',
-                      style: _ket,
+                      style: _ketMuda,
                     ),
                   ]),
                 ),
-                const Icon(Icons.chevron_right, color: AppColors.ink),
+                const Icon(Icons.chevron_right, color: AppColors.black),
               ]),
             ),
 
@@ -232,23 +249,15 @@ class _BerandaTabState extends State<BerandaTab> {
                   warna: AppColors.softYellow,
                   onTap: () => _detailPengumuman(p),
                   child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    const Icon(Icons.campaign_outlined, color: AppColors.ink),
+                    const Icon(Icons.campaign_outlined, color: AppColors.black),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(p.judul, style: _judulKartu),
+                        Text(p.judul, style: _judulKartu.copyWith(color: AppColors.black)),
                         const SizedBox(height: 2),
-                        Text(
-                          p.isi,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 12, color: AppColors.ink),
-                        ),
+                        Text(p.isi, maxLines: 2, overflow: TextOverflow.ellipsis, style: _ketMuda),
                         const SizedBox(height: 4),
-                        Text(
-                          OrtuFmt.tanggal(p.tanggal),
-                          style: const TextStyle(fontSize: 11, color: AppColors.inkMuted),
-                        ),
+                        Text(OrtuFmt.tanggal(p.tanggal), style: _labelMuda),
                       ]),
                     ),
                   ]),

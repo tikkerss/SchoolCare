@@ -113,9 +113,9 @@ class _OrtuShellPageState extends State<OrtuShellPage> {
       child: Row(mainAxisSize: MainAxisSize.min, children: [
         Text(
           list.length < 2 ? 'Kelas ${a.namaKelas}' : '${a.nama} · ${a.namaKelas}',
-          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.ink),
+          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.black),
         ),
-        if (list.length >= 2) const Icon(Icons.arrow_drop_down, size: 18, color: AppColors.ink),
+        if (list.length >= 2) const Icon(Icons.arrow_drop_down, size: 18, color: AppColors.black),
       ]),
     );
     if (list.length < 2) return chip;

@@ -12,7 +12,7 @@ import '../data/laporan_models.dart';
         GayaChip.orange,
         'Digantikan',
       ),
-      (StatusKehadiranGuru.tidakHadir, _) => (GayaChip.putus, 'Dibatalkan'),
+      (StatusKehadiranGuru.tidakHadir, _) => (GayaChip.putusKuning, 'Dibatalkan'),
       (StatusKehadiranGuru.belumAbsen, _) => (GayaChip.putih, 'Belum absen'),
     };
 

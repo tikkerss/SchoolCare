@@ -53,9 +53,12 @@ class _BuktiFotoPickerState extends State<BuktiFotoPicker> {
             child: const Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.photo_camera_outlined, size: 40, color: AppColors.inkMuted),
+                Icon(Icons.photo_camera_outlined, size: 40, color: AppColors.black),
                 SizedBox(height: 6),
-                Text('Belum ada foto', style: TextStyle(fontSize: 12, color: AppColors.inkMuted)),
+                Text(
+                  'Belum ada foto',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.black),
+                ),
               ],
             ),
           ),
@@ -93,13 +96,13 @@ class _BuktiFotoPickerState extends State<BuktiFotoPicker> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.location_off_outlined, size: 18, color: AppColors.ink),
+                  const Icon(Icons.location_off_outlined, size: 18, color: AppColors.black),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Lokasi di luar area sekolah (± ${(jarak / 1000).toStringAsFixed(1)} km). '
                       'Absensi tetap bisa disimpan, tetapi akan ditandai di laporan sekolah.',
-                      style: kecil?.copyWith(fontSize: 11, color: AppColors.ink),
+                      style: kecil?.copyWith(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.black),
                     ),
                   ),
                 ],

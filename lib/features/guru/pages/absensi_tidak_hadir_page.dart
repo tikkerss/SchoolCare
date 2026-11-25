@@ -114,6 +114,10 @@ class _AbsensiTidakHadirPageState extends State<AbsensiTidakHadirPage> {
               ListTile(
                 contentPadding: const EdgeInsets.only(left: 12),
                 tileColor: AppColors.softYellow,
+                textColor: AppColors.black,
+                iconColor: AppColors.black,
+                titleTextStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.black),
+                subtitleTextStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.black),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 leading: const Icon(Icons.description_outlined),
                 title: Text(widget.jadwal.suratPath!.split('/').last, overflow: TextOverflow.ellipsis),
@@ -184,7 +188,10 @@ class _AbsensiTidakHadirPageState extends State<AbsensiTidakHadirPage> {
               decoration: BoxDecoration(color: AppColors.softYellow, borderRadius: BorderRadius.circular(14)),
               child: Row(
                 children: [
-                  const Expanded(child: Text('Status kelas akan menjadi', style: TextStyle(fontSize: 13))),
+                  const Expanded(child: Text(
+                    'Status kelas akan menjadi',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.black),
+                  )),
                   StatusBadge(_adaPengganti ? 'digantikan' : 'dibatalkan'),
                 ],
               ),

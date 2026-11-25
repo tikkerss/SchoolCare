@@ -124,7 +124,7 @@ class _CatatanSheetState extends State<_CatatanSheet> {
                       decoration: BoxDecoration(color: AppColors.softYellow, borderRadius: BorderRadius.circular(14)),
                       child: ListTile(
                         contentPadding: const EdgeInsets.only(left: 14, right: 4),
-                        title: Text(c.isi, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400)),
+                        title: Text(c.isi, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.black)),
                         subtitle: Text(
                           [
                             c.dibuatOleh,

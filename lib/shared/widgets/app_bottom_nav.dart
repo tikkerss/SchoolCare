@@ -7,7 +7,7 @@ class AppBottomNavItem {
   final String label;
 }
 
-/// Navigasi bawah SchoolCare: latar putih, bayangan tipis ke atas, tinggi ±80.
+/// Navigasi bawah SchoolCare: frame putih bersudut atas 26, bayangan lembut ke atas, tinggi ±80.
 /// Item aktif = kotak pink 40×40 radius 10, ikon putih, label Bold.
 class AppBottomNav extends StatelessWidget {
   const AppBottomNav({super.key, required this.items, required this.index, required this.onTap});
@@ -18,7 +18,11 @@ class AppBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
-        decoration: const BoxDecoration(color: AppColors.white, boxShadow: AppColors.navShadow),
+        decoration: const BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
+          boxShadow: AppColors.navShadow,
+        ),
         child: SafeArea(
           top: false,
           child: SizedBox(

@@ -5,13 +5,16 @@ import 'package:schoolcare/shared/widgets/dashed.dart';
 /// Gaya chip status (bagian 3 panduan desain).
 enum GayaChip {
   pink(AppColors.pink, AppColors.white),
-  orange(AppColors.orange, AppColors.ink),
-  softYellow(AppColors.softYellow, AppColors.ink),
-  softPink(AppColors.softPink, AppColors.ink),
+  orange(AppColors.orange, AppColors.white),
+  softYellow(AppColors.softYellow, AppColors.black),
+  softPink(AppColors.softPink, AppColors.black),
   putih(AppColors.white, AppColors.ink),
 
-  /// Putih + garis putus-putus pink, teks pink.
-  putus(AppColors.white, AppColors.pink);
+  /// Putih + garis putus-putus pink, teks pink (Alpa).
+  putus(AppColors.white, AppColors.pink),
+
+  /// softYellow + garis putus-putus pink, teks pink (kelas Dibatalkan).
+  putusKuning(AppColors.softYellow, AppColors.pink);
 
   const GayaChip(this.latar, this.teks);
   final Color latar;
@@ -20,7 +23,7 @@ enum GayaChip {
   /// Warna tunggal yang mewakili gaya ini (untuk titik/garis tepi).
   Color get aksen => switch (this) {
         GayaChip.putih => AppColors.softPink,
-        GayaChip.putus => AppColors.pink,
+        GayaChip.putus || GayaChip.putusKuning => AppColors.pink,
         _ => latar,
       };
 }
@@ -39,10 +42,13 @@ class StatusPill extends StatelessWidget {
       style: TextStyle(color: gaya.teks, fontWeight: FontWeight.w700, fontSize: 11, height: 1.3),
     );
     const padding = EdgeInsets.symmetric(horizontal: 10, vertical: 4);
-    if (gaya == GayaChip.putus) {
-      return DashedOutline(
-        color: AppColors.pink,
-        child: Padding(padding: padding, child: teks),
+    if (gaya == GayaChip.putus || gaya == GayaChip.putusKuning) {
+      return DecoratedBox(
+        decoration: BoxDecoration(color: gaya.latar, borderRadius: BorderRadius.circular(8)),
+        child: DashedOutline(
+          color: AppColors.pink,
+          child: Padding(padding: padding, child: teks),
+        ),
       );
     }
     return Container(
@@ -72,10 +78,10 @@ class StatusBadge extends StatelessWidget {
     'sakit': ('Sakit', GayaChip.softPink),
     'alpa': ('Alpa', GayaChip.putus),
     // status kelas
-    'terjadwal': ('Terjadwal', GayaChip.putih),
+    'terjadwal': ('Terjadwal', GayaChip.softYellow),
     'berlangsung': ('Berlangsung', GayaChip.pink),
     'digantikan': ('Digantikan', GayaChip.orange),
-    'dibatalkan': ('Dibatalkan', GayaChip.putus),
+    'dibatalkan': ('Dibatalkan', GayaChip.putusKuning),
     'selesai': ('Selesai', GayaChip.softYellow),
     'dijadwalkan_ulang': ('Dijadwal ulang', GayaChip.orange),
     'kosong': ('Kosong', GayaChip.putus),

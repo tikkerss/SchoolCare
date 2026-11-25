@@ -4,7 +4,8 @@ import 'package:schoolcare/shared/widgets/dashed.dart';
 import 'package:schoolcare/shared/widgets/permukaan.dart';
 
 /// Kartu tiket untuk jadwal/pelajaran: kolom jam di kiri (±60) dipisah garis
-/// putus-putus softPink, isi di kanan. [sorot] = sedang berlangsung (bayangan pink).
+/// putus-putus softPink dengan lekukan setengah lingkaran (warna latar pink) di atas & bawah,
+/// isi di kanan. [sorot] = sedang berlangsung (bayangan pink).
 class TicketCard extends StatelessWidget {
   const TicketCard({
     super.key,
@@ -27,61 +28,86 @@ class TicketCard extends StatelessWidget {
   final VoidCallback? onTap;
   final Color warna;
 
+  /// Lebar kolom jam di kiri.
+  static const _lebarJam = 64.0;
+
+  /// Diameter lekukan setengah lingkaran di atas & bawah garis putus-putus.
+  static const _lekukan = 16.0;
+
   @override
   Widget build(BuildContext context) {
     final radius = BorderRadius.circular(20);
+    // Lekukan diwarnai latar halaman (pink), seperti sobekan tiket.
+    Widget lekuk({double? top, double? bottom}) => Positioned(
+          left: _lebarJam - _lekukan / 2 + 0.75,
+          top: top,
+          bottom: bottom,
+          child: const IgnorePointer(
+            child: SizedBox(
+              width: _lekukan,
+              height: _lekukan,
+              child: DecoratedBox(decoration: BoxDecoration(color: AppColors.pink, shape: BoxShape.circle)),
+            ),
+          ),
+        );
+
     return Container(
       decoration: BoxDecoration(
         color: warna,
         borderRadius: radius,
         boxShadow: sorot ? AppColors.activeShadow : AppColors.cardShadow,
       ),
-      child: Material(
-        type: MaterialType.transparency,
-        child: InkWell(
-          borderRadius: radius,
-          onTap: onTap,
-          child: Permukaan.putih(
-            child: IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  SizedBox(
-                    width: 64,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          if (labelAtas != null)
-                            Text(labelAtas!, style: const TextStyle(fontSize: 10, color: AppColors.inkFaint)),
-                          Text(
-                            jamMulai,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: sorot ? AppColors.pink : AppColors.ink,
+      clipBehavior: Clip.antiAlias,
+      child: Stack(children: [
+        Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            borderRadius: radius,
+            onTap: onTap,
+            child: Permukaan.putih(
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SizedBox(
+                      width: _lebarJam,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (labelAtas != null)
+                              Text(labelAtas!, style: const TextStyle(fontSize: 10, color: AppColors.inkMuted)),
+                            Text(
+                              jamMulai,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: sorot ? AppColors.pink : AppColors.ink,
+                              ),
                             ),
-                          ),
-                          if (jamSelesai != null)
-                            Text(jamSelesai!, style: const TextStyle(fontSize: 11, color: AppColors.inkMuted)),
-                        ],
+                            if (jamSelesai != null)
+                              Text(jamSelesai!, style: const TextStyle(fontSize: 11, color: AppColors.inkMuted)),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 10),
-                    child: DashedVerticalLine(color: AppColors.softPink),
-                  ),
-                  Expanded(
-                    child: Padding(padding: const EdgeInsets.fromLTRB(14, 14, 14, 14), child: child),
-                  ),
-                ],
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: _lekukan / 2 + 4),
+                      child: DashedVerticalLine(color: AppColors.softPink),
+                    ),
+                    Expanded(
+                      child: Padding(padding: const EdgeInsets.fromLTRB(14, 14, 14, 14), child: child),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
         ),
-      ),
+        lekuk(top: -_lekukan / 2),
+        lekuk(bottom: -_lekukan / 2),
+      ]),
     );
   }
 }

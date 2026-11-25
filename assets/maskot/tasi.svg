@@ -5,7 +5,7 @@
   <path d="M54 128 C34 124, 26 104, 34 92" fill="none" stroke="#3A1426" stroke-width="7" stroke-linecap="round"></path>
   <circle cx="34" cy="90" r="9" fill="#FFE9A6" stroke="#3A1426" stroke-width="3.5"></circle>
   <rect x="50" y="58" width="120" height="134" rx="42" fill="#FFE9A6" stroke="#3A1426" stroke-width="4"></rect>
-  <rect x="68" y="134" width="84" height="46" rx="18" fill="#FFB21F" stroke="#3A1426" stroke-width="4"></rect>
+  <rect x="68" y="134" width="84" height="46" rx="18" fill="#E07400" stroke="#3A1426" stroke-width="4"></rect>
   <path d="M90 150h40" stroke="#3A1426" stroke-width="4" stroke-linecap="round"></path>
   <ellipse cx="92" cy="100" rx="6.5" ry="8" fill="#3A1426"></ellipse>
   <ellipse cx="128" cy="100" rx="6.5" ry="8" fill="#3A1426"></ellipse>

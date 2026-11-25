@@ -182,12 +182,12 @@ class _FotoBukti extends StatelessWidget {
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Icon(Icons.photo_camera, size: 48, color: AppColors.inkMuted),
+        const Icon(Icons.photo_camera, size: 48, color: AppColors.black),
         const SizedBox(height: 8),
         Text(
           pesan,
           textAlign: TextAlign.center,
-          style: const TextStyle(color: AppColors.inkMuted),
+          style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.black),
         ),
       ],
     ),

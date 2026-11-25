@@ -95,6 +95,7 @@ class _RekapKehadiranPageState extends State<RekapKehadiranPage> {
                           child: DataTable(
                             columnSpacing: 20,
                             headingRowColor: const WidgetStatePropertyAll(AppColors.softPink),
+                            headingTextStyle: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.black),
                             columns: const [
                               DataColumn(label: Text('Nama')),
                               DataColumn(label: Text('Hadir'), numeric: true),

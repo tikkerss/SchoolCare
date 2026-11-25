@@ -74,18 +74,18 @@ class _JadwalPageState extends State<JadwalPage> {
                   Row(
                     children: [
                       Expanded(
-                        child: _KotakStatistik(angka: list.length, label: 'Jam hari ini', warna: AppColors.white),
+                        child: _KotakStatistik(angka: list.length, label: 'Jam hari ini', warna: AppColors.orange),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: _KotakStatistik(angka: sudah, label: 'Sudah absen', warna: AppColors.orange),
+                        child: _KotakStatistik(angka: sudah, label: 'Sudah absen', warna: AppColors.softPink),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: _KotakStatistik(
                           angka: list.length - sudah,
                           label: 'Belum absen',
-                          warna: AppColors.softYellow,
+                          warna: AppColors.orange,
                         ),
                       ),
                     ],
@@ -129,12 +129,18 @@ class _Sapaan extends StatelessWidget {
       Row(
         children: [
           Expanded(
-            child: Text(
-              nama == null ? 'Halo!' : 'Halo, $nama',
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(text: nama == null ? 'Halo!' : 'Halo, '),
+                  // Nama di sapaan = softYellow.
+                  if (nama != null) TextSpan(text: nama, style: const TextStyle(color: AppColors.softYellow)),
+                ],
+              ),
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.white, height: 1.25),
             ),
           ),
-          if (wali) ...[const SizedBox(width: 8), const StatusPill(label: 'Wali Kelas', gaya: GayaChip.softYellow)],
+          if (wali) ...[const SizedBox(width: 8), const StatusPill(label: 'Wali Kelas', gaya: GayaChip.orange)],
         ],
       ),
       const SizedBox(height: 4),
@@ -152,17 +158,25 @@ class _KotakStatistik extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
     decoration: BoxDecoration(color: warna, borderRadius: BorderRadius.circular(20), boxShadow: AppColors.cardShadow),
+    // Rata tengah: label di atas, angka besar di bawah.
     child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
-          '$angka',
-          style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.ink, height: 1.1),
+          label,
+          textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.teksDi(warna)),
         ),
         const SizedBox(height: 2),
-        Text(label, style: const TextStyle(fontSize: 11, color: AppColors.ink)),
+        Text(
+          '$angka',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.teksDi(warna), height: 1.1),
+        ),
       ],
     ),
   );
