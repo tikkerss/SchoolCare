@@ -110,10 +110,15 @@ class _OrtuShellPageState extends State<OrtuShellPage> {
     final chip = Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(color: AppColors.softPink, borderRadius: BorderRadius.circular(8)),
+      // Flexible + ellipsis: nama anak yang panjang tidak membuat chip overflow.
       child: Row(mainAxisSize: MainAxisSize.min, children: [
-        Text(
-          list.length < 2 ? 'Kelas ${a.namaKelas}' : '${a.nama} · ${a.namaKelas}',
-          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.black),
+        Flexible(
+          child: Text(
+            list.length < 2 ? 'Kelas ${a.namaKelas}' : '${a.nama} · ${a.namaKelas}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.black),
+          ),
         ),
         if (list.length >= 2) const Icon(Icons.arrow_drop_down, size: 18, color: AppColors.black),
       ]),
@@ -135,8 +140,8 @@ class _OrtuShellPageState extends State<OrtuShellPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(a.nama),
-        Text('Kelas ${a.namaKelas}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: AppColors.white)),
+        Text(a.nama, maxLines: 1, overflow: TextOverflow.ellipsis),
+        Text('Kelas ${a.namaKelas}', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: AppColors.white)),
       ],
     );
     final list = _daftarAnak ?? const <Anak>[];
@@ -147,7 +152,7 @@ class _OrtuShellPageState extends State<OrtuShellPage> {
       itemBuilder: (_) => [
         for (final x in list) PopupMenuItem(value: x, child: Text('${x.nama} (Kelas ${x.namaKelas})')),
       ],
-      child: Row(mainAxisSize: MainAxisSize.min, children: [teks, const Icon(Icons.arrow_drop_down)]),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [Flexible(child: teks), const Icon(Icons.arrow_drop_down)]),
     );
   }
 }
