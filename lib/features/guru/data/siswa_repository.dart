@@ -29,7 +29,7 @@ class SiswaRepository {
         .eq('tanggal', hariIni);
     final perSiswa = {for (final a in absen) a['siswa_id'] as String: a};
 
-    // Catatan: kalau tabelnya belum dibuat Backend, daftar siswa tetap tampil.
+    // Kalau catatan gagal dimuat (mis. koneksi), daftar siswa tetap tampil.
     var catatanAktif = true;
     final catatan = <String, List<CatatanSiswa>>{};
     try {

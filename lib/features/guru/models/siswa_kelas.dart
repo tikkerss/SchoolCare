@@ -35,7 +35,7 @@ class CatatanSiswa {
         waktu = DateTime.parse(j['created_at'] as String).toLocal();
 }
 
-/// Daftar siswa + apakah fitur catatan sudah aktif (tabel catatan_siswa sudah dibuat Backend).
+/// Daftar siswa + apakah catatan siswa berhasil dimuat.
 class DaftarSiswa {
   final List<SiswaKelas> siswa;
   final bool catatanAktif;
