@@ -105,7 +105,7 @@ class _JadwalDetailPageState extends State<JadwalDetailPage> {
                       child: Text(
                         d.catatanAktif
                             ? 'Status diisi wali kelas saat absensi pagi. Ada kejadian? Ketuk nama siswa untuk menulis catatan.'
-                            : 'Status diisi wali kelas saat absensi pagi. Fitur catatan belum aktif (tabel catatan_siswa belum dibuat Backend).',
+                            : 'Status diisi wali kelas saat absensi pagi. Catatan siswa gagal dimuat, tarik layar ke bawah untuk memuat ulang.',
                         style: theme.textTheme.bodySmall?.copyWith(
                           fontSize: 11,
                           color: d.catatanAktif ? AppColors.textSecondary : AppColors.pink,
